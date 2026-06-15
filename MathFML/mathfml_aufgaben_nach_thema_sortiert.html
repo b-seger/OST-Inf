@@ -801,24 +801,28 @@
         <div class="task-card" onclick="toggle(this)">
           <div class="task-top">
             <div>
-              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">6
+              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">5+6
                   Pkt</span></div>
-              <div class="task-formula">\(g=f\circ v\), \(\mathbf{v}(t)=\begin{pmatrix}e^t\\t^2\end{pmatrix}\),
-                \(f(\mathbf{v})=e^{|\mathbf{v}|}\). Formel für \(g(t)\) und \(\dfrac{dg}{dt}\) berechnen.</div>
+              <div class="task-formula">
+                Gegeben \(f(\mathbf{v})=e^{|\mathbf{v}|}\) und \(\mathbf{v}(t)=\begin{pmatrix}e^t\\t^2\end{pmatrix}\), sei \(g=f\circ\mathbf{v}\).<br>
+                (a) Berechne \(\nabla f\) in Vektornotation (ohne Indizes).&nbsp;&nbsp;
+                (b) Bestimme \(g(t)\) und berechne \(\dfrac{d}{dt}g\).
+              </div>
             </div><span class="chevron">&#8964;</span>
           </div>
           <div class="task-detail">
             <div class="task-detail-inner">
-              Kettenregel: \(\dfrac{dg}{dt}=\nabla f(\mathbf{v}(t))\cdot\mathbf{v}'(t)\).
+              (a) Kettenregel: \(\nabla|\mathbf{v}|=\dfrac{\mathbf{v}^\top}{|\mathbf{v}|}\).<br>
+              (b) \(g(t)=f(\mathbf{v}(t))\) einsetzen, dann Kettenregel: \(\dfrac{dg}{dt}=\nabla f(\mathbf{v}(t))\cdot\mathbf{v}'(t)\).
               <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
                   fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>Musterlösung anzeigen</div>
               <div class="sol-body">
-                \(g(t)=e^{\sqrt{e^{2t}+t^4}}\)<br><br>
-                \(\dfrac{dg}{dt}=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{2e^{2t}+4t^3}{2\sqrt{e^{2t}+t^4}}\)<br><br>
-                Alternativ via Kettenregel: \(\nabla f=\dfrac{\mathbf{v}^\top}{|\mathbf{v}|}e^{|\mathbf{v}|}\),
-                \(\mathbf{v}'(t)=(e^t,2t)^\top\)
+                <b>(a)</b> \(\nabla e^{|\mathbf{v}|}=e^{|\mathbf{v}|}\cdot\nabla|\mathbf{v}|=\dfrac{e^{|\mathbf{v}|}}{|\mathbf{v}|}\,\mathbf{v}^\top\)<br><br>
+                <b>(b)</b> \(|\mathbf{v}(t)|=\sqrt{e^{2t}+t^4}\), also \(g(t)=e^{\sqrt{e^{2t}+t^4}}\)<br><br>
+                \(\mathbf{v}'(t)=\begin{pmatrix}e^t\\2t\end{pmatrix}\)<br><br>
+                \(\dfrac{dg}{dt}=\nabla f(\mathbf{v}(t))\cdot\mathbf{v}'(t)=\dfrac{e^{\sqrt{e^{2t}+t^4}}}{\sqrt{e^{2t}+t^4}}\,(e^t,\,t^2)\cdot\begin{pmatrix}e^t\\2t\end{pmatrix}=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{2e^{2t}+4t^3}{2\sqrt{e^{2t}+t^4}}\)
               </div>
             </div>
           </div>
