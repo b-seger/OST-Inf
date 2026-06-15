@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathFML – Prüfungsaufgaben nach Typ</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #ffffff;
+      --bg-2: #f7f7f5;
+      --bg-3: #f0efe9;
+      --text: #1a1a18;
+      --text-2: #5a5a55;
+      --text-3: #9a9a93;
+      --border: rgba(0, 0, 0, 0.10);
+      --border-strong: rgba(0, 0, 0, 0.18);
+      --accent: #185FA5;
+      --accent-bg: #E6F1FB;
+      --accent-text: #0C447C;
+      --green-bg: #EAF3DE;
+      --green-text: #3B6D11;
+      --amber-bg: #FAEEDA;
+      --amber-text: #854F0B;
+      --sol-bg: #F0FFF4;
+      --sol-border: #22c55e;
+      --sol-text: #14532d;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg-2: #252523;
+        --bg-3: #2e2e2b;
+        --text: #e8e8e2;
+        --text-2: #a0a09a;
+        --text-3: #686862;
+        --border: rgba(255, 255, 255, 0.10);
+        --border-strong: rgba(255, 255, 255, 0.18);
+        --accent: #85B7EB;
+        --accent-bg: #042C53;
+        --accent-text: #B5D4F4;
+        --green-bg: #173404;
+        --green-text: #C0DD97;
+        --amber-bg: #412402;
+        --amber-text: #FAC775;
+        --sol-bg: #052e16;
+        --sol-border: #16a34a;
+        --sol-text: #86efac;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-3);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 0.5px solid var(--border-strong);
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .header h1 span {
+      font-weight: 400;
+      color: var(--text-2);
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    .header-meta span+span::before {
+      content: '·';
+      margin-right: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+
+    .tab-btn {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 99px;
+      border: 0.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-2);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    .category {
+      display: none;
+    }
+
+    .category.visible {
+      display: block;
+    }
+
+    .cat-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 16px;
+      align-items: start;
+      margin-bottom: 1.25rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .cat-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      grid-column: 1;
+    }
+
+    .cat-count {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      align-self: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent-text);
+      background: var(--accent-bg);
+      padding: 4px 10px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .cat-desc {
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.65;
+      grid-column: 1;
+    }
+
+    .tasks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      overflow: hidden;
+    }
+
+    .task-card:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-2);
+    }
+
+    .task-card.open {
+      border-color: var(--border-strong);
+    }
+
+    .task-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 1rem 1.25rem;
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 99px;
+      letter-spacing: 0.01em;
+    }
+
+    .badge-year {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+    }
+
+    .badge-pts {
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    .task-formula {
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text);
+    }
+
+    .chevron {
+      font-size: 16px;
+      color: var(--text-3);
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+      margin-top: 3px;
+    }
+
+    .task-card.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .task-detail {
+      display: none;
+      padding: 0 1.25rem 1.25rem;
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.75;
+    }
+
+    .task-card.open .task-detail {
+      display: block;
+    }
+
+    .task-detail-inner {
+      border-top: 0.5px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    /* Hinweis-Box */
+    .tip-box {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--bg-2);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-2);
+    }
+
+    .tip-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 4px;
+    }
+
+    /* Lösung */
+    .sol-toggle {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--sol-text);
+      background: var(--sol-bg);
+      border: 1px solid var(--sol-border);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      width: fit-content;
+      user-select: none;
+      transition: opacity 0.15s;
+    }
+
+    .sol-toggle:hover {
+      opacity: 0.8;
+    }
+
+    .sol-toggle svg {
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .sol-toggle.open svg {
+      transform: rotate(180deg);
+    }
+
+    .sol-body {
+      display: none;
+      margin-top: 10px;
+      padding: 14px 16px;
+      background: var(--sol-bg);
+      border: 1px solid var(--sol-border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.85;
+      color: var(--text);
+    }
+
+    .sol-body.visible {
+      display: block;
+    }
+
+    .sol-body mjx-container {
+      display: inline;
+    }
+
+    mjx-container {
+      display: inline-block;
+    }
+
+    .MJX-TEX {
+      color: var(--text) !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    /* ── Status buttons ── */
+    .status-btns {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+      align-items: flex-start;
+      margin-top: 2px;
+    }
+
+    .status-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 99px;
+      border: 1.5px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-3);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    .status-btn:hover { opacity: 0.8; }
+
+    .status-btn.verstanden {
+      background: var(--green-bg);
+      color: var(--green-text);
+      border-color: transparent;
+    }
+
+    .status-btn.wiederholen {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+      border-color: transparent;
+    }
+
+    /* Card border tinting by status */
+    .task-card[data-status="verstanden"] {
+      border-color: #86efac;
+    }
+
+    .task-card[data-status="wiederholen"] {
+      border-color: #fbbf24;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+
+    .filter-btn {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+    .filter-btn.active {
+      border-color: transparent;
+    }
+
+    .filter-btn[data-filter="all"].active { background: var(--accent-bg); color: var(--accent-text); }
+    .filter-btn[data-filter="verstanden"].active { background: var(--green-bg); color: var(--green-text); }
+    .filter-btn[data-filter="wiederholen"].active { background: var(--amber-bg); color: var(--amber-text); }
+
+    .task-card.hidden-by-filter { display: none; }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <h2 class="sr-only">Prüfungsaufgaben nach Typ – Mathematical Foundations for Machine Learning</h2>
+
+    <div class="header">
+      <h1>Prüfungsaufgaben nach Typ <span>– MathFML</span></h1>
+      <div class="header-meta">
+        <span>10 Prüfungen</span><span>FS2019 bis FS2025</span><span>Aufgaben nach Thema gruppiert</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showCat('gradient',this)">Gradient &amp; part. Ableitung</button>
+      <button class="tab-btn" onclick="showCat('total',this)">Totale Ableitung</button>
+      <button class="tab-btn" onclick="showCat('jacobi',this)">Jacobi-Matrix</button>
+      <button class="tab-btn" onclick="showCat('stationary',this)">Stationäre Punkte</button>
+      <button class="tab-btn" onclick="showCat('hessian',this)">Hesse &amp; Klassifikation</button>
+      <button class="tab-btn" onclick="showCat('linear',this)">Linearisierung</button>
+      <button class="tab-btn" onclick="showCat('prob',this)">Wahrscheinlichkeit &amp; MLE</button>
+      <button class="tab-btn" onclick="showCat('misc',this)">Verschiedenes</button>
+    </div>
+
+    <div class="filter-bar">
+      <span class="filter-label">Anzeigen:</span>
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">Alle</button>
+      <button class="filter-btn" data-filter="verstanden" onclick="setFilter('verstanden',this)">✓ Verstanden</button>
+      <button class="filter-btn" data-filter="wiederholen" onclick="setFilter('wiederholen',this)">↺ Wiederholen</button>
+      <button class="filter-btn" data-filter="none" onclick="setFilter('none',this)">Nicht markiert</button>
+    </div>
+
+    <!-- ── GRADIENT ── -->
+    <div id="gradient" class="category visible">
+      <div class="cat-header">
+        <div class="cat-title">Gradient &amp; partielle Ableitungen</div>
+        <div class="cat-count">9 Aufgaben · 10 Prüfungen</div>
+        <div class="cat-desc">Berechnung von \(\nabla f\) oder \(\frac{\partial f}{\partial x_i}\) – oft mit
+          Vektornotation zu vereinfachen. Häufigster Aufgabentyp in jeder Prüfung.</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019 &amp; FS2022</span><span
+                  class="badge badge-pts">6+7+6 Pkt</span></div>
+              <div class="task-formula">Berechne: (a) \(\displaystyle\nabla \ln\!\left(\frac{x^2 \cos y}{e^z}\right)\)
+                &nbsp; (b) \(\displaystyle\frac{\partial}{\partial r_k}\sum_i e^{r_i} \cdot \ln r_i\) &nbsp; (c)
+                \(\displaystyle\nabla e^{-|\mathbf{r}|^2}\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) Quotientenregel im Logarithmus: \(\ln\frac{A}{B}=\ln A-\ln B\), dann partiell ableiten.<br>
+              (b) Nur der \(k\)-te Term hängt von \(r_k\) ab.<br>
+              (c) Kettenregel mit \(|\mathbf{r}|^2=\mathbf{r}^\top\mathbf{r}\): Ergebnis
+              \(-2\mathbf{r}\,e^{-|\mathbf{r}|^2}\).
+              <div class="tip-box">
+                <div class="tip-label">Achtung</div>Identische Aufgabe in FS2019 und FS2022 – unbedingt sicher können!
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(\nabla\ln\!\left(\frac{x^2\cos y}{e^z}\right) = \nabla(2\ln x + \ln\cos y - z) =
+                \left(\dfrac{2}{x},\,-\tan y,\,-1\right)\)<br><br>
+                <b>(b)</b> \(\displaystyle\frac{\partial}{\partial r_k}\sum_i e^{r_i}\ln r_i = e^{r_k}\!\left(\ln r_k +
+                \frac{1}{r_k}\right)\)<br><br>
+                <b>(c)</b> \(\nabla e^{-|\mathbf{r}|^2} = e^{-|\mathbf{r}|^2}\cdot\nabla(-|\mathbf{r}|^2) =
+                -2e^{-|\mathbf{r}|^2}\,\mathbf{r}^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">5+6
+                  Pkt</span></div>
+              <div class="task-formula">(a) \(f(\mathbf{v})=e^{|\mathbf{v}|}\). Berechne \(\nabla f\) in
+                Vektornotation.<br>(b) \(f(\mathbf{x})=\sigma(\mathbf{c}\cdot\mathbf{x})\). Berechne \(\nabla f\).
+                Hinweis: \(\sigma'(t)=\sigma(t)(1-\sigma(t))\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) \(|\mathbf{v}|=\sqrt{\mathbf{v}^\top\mathbf{v}}\), Kettenregel: \(\nabla f =
+              \frac{\mathbf{v}}{|\mathbf{v}|}\,e^{|\mathbf{v}|}\).<br>
+              (b) Kettenregel: \(\nabla f =
+              \sigma(\mathbf{c}^\top\mathbf{x})(1-\sigma(\mathbf{c}^\top\mathbf{x}))\cdot\mathbf{c}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> Kettenregel: \(\nabla e^{|\mathbf{v}|} = e^{|\mathbf{v}|}\nabla|\mathbf{v}| =
+                e^{|\mathbf{v}|}\dfrac{\mathbf{v}^\top}{|\mathbf{v}|}\)<br><br>
+                <b>(b)</b> \(\nabla f = \sigma'(\mathbf{c}^\top\mathbf{x})\cdot\nabla(\mathbf{c}^\top\mathbf{x}) =
+                \sigma(\mathbf{c}^\top\mathbf{x})(1-\sigma(\mathbf{c}^\top\mathbf{x}))\cdot\mathbf{c}^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020</span><span class="badge badge-pts">5+7
+                  Pkt</span></div>
+              <div class="task-formula">(a) \(\nabla_{\mathbf{x}}\ln(\mathbf{y}^\top\mathbf{x})\) (\(\mathbf{y}\) ist
+                Parameter)&nbsp;&nbsp; (b) \(\displaystyle\frac{\partial}{\partial x_i}\ln(x_1e^{x_1}\cdots
+                x_ne^{x_n})\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) \(\mathbf{y}\) konstant: \(\nabla f=\dfrac{\mathbf{y}}{\mathbf{y}^\top\mathbf{x}}\).<br>
+              (b) Log aufspalten: \(\sum_j(\ln x_j+x_j)\), dann \(\frac{\partial}{\partial x_i}=\frac{1}{x_i}+1\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(\nabla_\mathbf{x}\ln(\mathbf{y}^\top\mathbf{x}) =
+                \dfrac{1}{\mathbf{y}^\top\mathbf{x}}\cdot\mathbf{y}^\top\)<br><br>
+                <b>(b)</b> \(\ln(x_1e^{x_1}\cdots x_ne^{x_n}) = \sum_j(\ln x_j + x_j)\), daher:
+                \(\dfrac{\partial}{\partial x_i} = \dfrac{1}{x_i}+1\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020_2</span><span class="badge badge-pts">9
+                  Pkt</span></div>
+              <div class="task-formula">\(\displaystyle\nabla\ln\!\left(\prod_{k=1}^n
+                x_k^k\right),\quad\mathbf{x}\in(0,\infty)^n\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Log-Trick: \(\ln\prod x_k^k=\sum_k k\ln x_k\). Ableitung nach \(x_i\): \(\frac{i}{x_i}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\ln\!\prod_{k=1}^n x_k^k = \sum_{k=1}^n k\ln x_k\)<br><br>
+                \(\dfrac{\partial}{\partial x_i}\sum_k k\ln x_k = \dfrac{i}{x_i}\)<br><br>
+                \(\Rightarrow\;\nabla\ln\!\prod x_k^k =
+                \left(\dfrac{1}{x_1},\,\dfrac{2}{x_2},\,\ldots,\,\dfrac{n}{x_n}\right)^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021</span><span class="badge badge-pts">5
+                  Pkt</span></div>
+              <div class="task-formula">
+                \(\displaystyle\nabla\exp\!\left(-\frac{\mathbf{x}^\top\mathbf{x}}{|\mathbf{x}|}\right)\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Vereinfachung: \(\frac{\mathbf{x}^\top\mathbf{x}}{|\mathbf{x}|}=|\mathbf{x}|\). Dann Kettenregel.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                Schlüsselbeobachtung:
+                \(\dfrac{\mathbf{x}^\top\mathbf{x}}{|\mathbf{x}|}=\dfrac{|\mathbf{x}|^2}{|\mathbf{x}|}=|\mathbf{x}|\)<br><br>
+                Also: \(f(\mathbf{x})=e^{-|\mathbf{x}|}\)<br><br>
+                \(\nabla f = e^{-|\mathbf{x}|}\cdot(-1)\cdot\nabla|\mathbf{x}| =
+                -\dfrac{\mathbf{x}^\top}{|\mathbf{x}|}e^{-|\mathbf{x}|}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021_2</span><span class="badge badge-pts">6+8
+                  Pkt</span></div>
+              <div class="task-formula">(a) \(\nabla\ln\!\left(x+e^{x^2 y}\right)\)&nbsp;&nbsp;&nbsp;(b)
+                \(\displaystyle\nabla\ln\!\left(\sum_i 1+x_i(x_i+1)\right)\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) Kettenregel, Ergebnis als 2-Vektor.<br>(b) Nur der \(i\)-te Term hängt von \(x_i\) ab.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> Mit \(u=x+e^{x^2 y}\): \(\dfrac{\partial u}{\partial x}=1+2xye^{x^2 y}\), \(\dfrac{\partial u}{\partial y}=x^2 e^{x^2 y}\)<br>
+                \(\nabla\ln\!\left(x+e^{x^2 y}\right)=\dfrac{1}{x+e^{x^2 y}}\!\left(1+2xye^{x^2 y},\;x^2 e^{x^2 y}\right)\)<br><br>
+                <b>(b)</b> \(\dfrac{\partial}{\partial x_j}\ln\!\left(\sum_i 1+x_i^2+x_i\right) = \dfrac{2x_j+1}{\sum_i
+                1+x_i(x_i+1)}\)<br><br>
+                Gradient: \(\dfrac{1}{\sum_i 1+x_i(x_i+1)}\cdot(2x_1+1,\,2x_2+1,\,\ldots,\,2x_n+1)^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2023</span><span class="badge badge-pts">6+5+13
+                  Pkt</span></div>
+              <div class="task-formula">(a) \(\nabla e^{x\ln(z)+y^2}\)&nbsp;&nbsp;(b) \(\frac{\partial}{\partial
+                x}\ln(\sigma(x))\)&nbsp;&nbsp;(c) \(\nabla(\mathbf{r}^\top M\mathbf{r})\) für symm. \(M\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) Kettenregel nach \(x,y,z\). (b) Sigmoid + Kettenregel. (c) \(2M\mathbf{r}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(\nabla e^{x\ln z+y^2} = e^{x\ln z+y^2}\left(\ln z,\;2y,\;\dfrac{x}{z}\right)\)<br><br>
+                <b>(b)</b> \(\dfrac{\partial}{\partial
+                x}\ln\sigma(x)=\dfrac{\sigma'(x)}{\sigma(x)}=\dfrac{\sigma(x)(1-\sigma(x))}{\sigma(x)}=1-\sigma(x)\)<br><br>
+                Alternativ: \(-\dfrac{e^{-x}}{1+e^{-x}}\)<br><br>
+                <b>(c)</b> \(\dfrac{\partial}{\partial r_i}\mathbf{r}^\top M\mathbf{r}=\sum_l M_{il}r_l+\sum_k r_k
+                M_{ki}=2(M\mathbf{r})_i\) (da \(M=M^\top\))<br>
+                Also: \(\nabla(\mathbf{r}^\top M\mathbf{r})=(2M\mathbf{r})^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2024</span><span class="badge badge-pts">5
+                  Pkt</span></div>
+              <div class="task-formula">\(f(\mathbf{x})=\mathbf{x}^\top M\mathbf{x}\) mit \(M\in\mathbb{R}^{3\times
+                3}\). Berechne \(\nabla f\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\nabla(\mathbf{x}^\top M\mathbf{x})=(M+M^\top)\mathbf{x}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(M=\begin{pmatrix}5&0&1\\0&2&-3\\1&-3&0\end{pmatrix}\), ausmultiplizieren ergibt:<br>
+                \(f=5x_1^2+2x_1x_3+2x_2^2-6x_2x_3\)<br><br>
+                \(\nabla f=(10x_1+2x_3,\;4x_2-6x_3,\;2x_1-6x_2)\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">4+3
+                  Pkt</span></div>
+              <div class="task-formula">(a)
+                \(\displaystyle\nabla\ln\!\left(\frac{x^2+y^2}{e^{-z^2+1}}\right)\)&nbsp;&nbsp;(b)
+                \(\displaystyle\frac{\partial}{\partial x_i}\sum_{k=1}^n\sin(x_k)\cos(x_k)\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) Log aufspalten. (b) Nur \(i\)-ter Term hängt von \(x_i\) ab.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b>
+                \(\nabla\ln\!\left(\frac{x^2+y^2}{e^{-z^2+1}}\right)=\nabla(\ln(x^2+y^2)-(-z^2+1))=\left(\dfrac{2x}{x^2+y^2},\,\dfrac{2y}{x^2+y^2},\,2z\right)\)<br><br>
+                <b>(b)</b> Nur der \(i\)-te Summand hängt von \(x_i\) ab:<br>
+                \(\dfrac{\partial}{\partial x_i}\sin(x_i)\cos(x_i)=\cos^2(x_i)-\sin^2(x_i)\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── TOTALE ABLEITUNG ── -->
+    <div id="total" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Totale Ableitung &amp; Kettenregel</div>
+        <div class="cat-count">7 Aufgaben · 8 Prüfungen</div>
+        <div class="cat-desc">Zeitableitung \(\frac{d}{dt}f(\mathbf{x}(t))\) entlang einer Kurve via Kettenregel:
+          \(\frac{d}{dt}f=\nabla f\cdot\mathbf{x}'(t)\). In fast jeder Prüfung vorhanden.</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019</span><span class="badge badge-pts">5+4
+                  Pkt</span></div>
+              <div class="task-formula">\(f(x,t)=t^2x^2\sin(tx)\), \(x(t)=\dfrac{e^t}{t}\).&nbsp; (a) \(\dfrac{\partial
+                f}{\partial t}\) (partiell)&nbsp;&nbsp;(b) \(\dfrac{df}{dt}\) (total)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) \(x\) als Konstante behandeln; (b) \(x(t)\) einsetzen, dann direkt ableiten.
+              <div class="tip-box">
+                <div class="tip-label">Schlüsselunterschied</div>\(\partial f/\partial t\) hält \(x\) fest; \(df/dt\)
+                berücksichtigt, dass \(x=e^t/t\) selbst von \(t\) abhängt.
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(x\) konstant, Produktregel in \(t\):<br>
+                \(\dfrac{\partial f}{\partial t}=tx^2\bigl[2\sin(tx)+tx\cos(tx)\bigr]\)<br><br>
+                <b>(b)</b> Einsetzen \(x(t)=\tfrac{e^t}{t}\):<br>
+                \(t^2x^2=t^2\cdot\dfrac{e^{2t}}{t^2}=e^{2t}\),&ensp;\(tx=t\cdot\dfrac{e^t}{t}=e^t\)<br>
+                \(\Rightarrow f\!\left(\tfrac{e^t}{t},t\right)=e^{2t}\sin(e^t)\)<br><br>
+                \(\dfrac{df}{dt}=2e^{2t}\sin(e^t)+e^{2t}\cos(e^t)\cdot e^t=e^{2t}\!\left(2\sin e^t+e^t\cos e^t\right)\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">6
+                  Pkt</span></div>
+              <div class="task-formula">\(g=f\circ v\), \(\mathbf{v}(t)=\begin{pmatrix}e^t\\t^2\end{pmatrix}\),
+                \(f(\mathbf{v})=e^{|\mathbf{v}|}\). Formel für \(g(t)\) und \(\dfrac{dg}{dt}\) berechnen.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Kettenregel: \(\dfrac{dg}{dt}=\nabla f(\mathbf{v}(t))\cdot\mathbf{v}'(t)\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(g(t)=e^{\sqrt{e^{2t}+t^4}}\)<br><br>
+                \(\dfrac{dg}{dt}=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{2e^{2t}+4t^3}{2\sqrt{e^{2t}+t^4}}\)<br><br>
+                Alternativ via Kettenregel: \(\nabla f=\dfrac{\mathbf{v}^\top}{|\mathbf{v}|}e^{|\mathbf{v}|}\),
+                \(\mathbf{v}'(t)=(e^t,2t)^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020</span><span class="badge badge-pts">4+7
+                  Pkt</span></div>
+              <div class="task-formula">\(f(x,y)=xye^y\), \(x(t)=e^t\), \(y(t)=t^2\).&nbsp; (a) \(\nabla
+                f\)&nbsp;&nbsp;(b) \(\dfrac{df}{dt}\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\frac{df}{dt}=\frac{\partial f}{\partial x}\cdot e^t+\frac{\partial f}{\partial y}\cdot 2t\), dann
+              \(x(t),y(t)\) einsetzen.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(\nabla f=(ye^y,\;xe^y+xye^y)=e^y(y,\;x+xy)\)<br><br>
+                <b>(b)</b> \(\dfrac{df}{dt}=e^y(y\cdot e^t+(x+xy)\cdot 2t)\)<br>
+                Einsetzen \(x=e^t,y=t^2\): \(=(2t+t^2+2t^3)e^{t^2+t}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021</span><span class="badge badge-pts">5
+                  Pkt</span></div>
+              <div class="task-formula">\(f=\dfrac{x}{z^2}e^{y-z}\),
+                \(\mathbf{x}(t)=\begin{pmatrix}t\\0\\t^2\end{pmatrix}\). Berechne \(\dfrac{df}{dt}\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\frac{df}{dt}=\frac{\partial f}{\partial x}\cdot 1+\frac{\partial f}{\partial y}\cdot 0+\frac{\partial
+              f}{\partial z}\cdot 2t\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\nabla f=\dfrac{e^{y-z}}{z^2}\!\left(1,\;x,\;-x\!\left(1+\dfrac{2}{z}\right)\right)\)<br><br>
+                Einsetzen \(x=t,y=0,z=t^2\):<br>
+                \(\dfrac{df}{dt}=\dfrac{e^{-t^2}}{t^4}\cdot 1 - \dfrac{e^{-t^2}}{t^4}\cdot
+                t\cdot\!\left(1+\dfrac{2}{t^2}\right)\cdot 2t = -\dfrac{2t^2+3}{t^4}e^{-t^2}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021_2</span><span class="badge badge-pts">8
+                  Pkt</span></div>
+              <div class="task-formula">\(\nabla f(x,y)=(4xy,\;2x^2+y)\) gegeben,
+                \(\mathbf{g}(t)=\begin{pmatrix}t^2\\e^t\end{pmatrix}\). Berechne \(\dfrac{d}{dt}f(\mathbf{g}(t))\).
+              </div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\nabla f\) gegeben: \(\frac{d}{dt}f(\mathbf{g}(t))=\nabla f(\mathbf{g}(t))\cdot\mathbf{g}'(t)\) mit
+              \(\mathbf{g}'(t)=(2t,e^t)^\top\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\nabla f(\mathbf{g}(t))=(4t^2e^t,\;2t^4+e^t)\)<br><br>
+                \(\dfrac{d}{dt}f(\mathbf{g}(t))=(4t^2e^t)\cdot 2t+(2t^4+e^t)\cdot e^t = 8t^3e^t+2t^4e^t+e^{2t}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2024</span><span class="badge badge-pts">4+6
+                  Pkt</span></div>
+              <div class="task-formula">\(f(\mathbf{x},t)=\sqrt{\mathbf{x}^\top\mathbf{x}}\cdot t\),
+                \(\mathbf{x}=(t,\ldots,t)^\top\).&nbsp; (a) \(\dfrac{\partial f}{\partial t}\)&nbsp;&nbsp;(b)
+                \(\dfrac{df}{dt}\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) \(\mathbf{x}\) fest. (b) \(\mathbf{x}'(t)=(1,\ldots,1)^\top\), Kettenregel.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(\dfrac{\partial f}{\partial t}=\sqrt{\mathbf{x}^\top\mathbf{x}}=|\mathbf{x}|\)<br><br>
+                <b>(b)</b> \(f(\mathbf{x}(t),t)=\sqrt{nt^2}\cdot t=\sqrt{n}t^{3/2}\cdot\sqrt{t}=\sqrt{n}\,t^{3/2}\)<br>
+                Warte – korrekt: \(f=\sqrt{n\cdot t^2}\cdot t=\sqrt{n}\,t^2\), also
+                \(\dfrac{df}{dt}=\dfrac{3\sqrt{n}}{2}\sqrt{t}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">4
+                  Pkt</span></div>
+              <div class="task-formula">\(z=f(x,y)=\dfrac{x}{y^2+1}\),
+                \(\boldsymbol{\gamma}(t)=\begin{pmatrix}t\\t^2\end{pmatrix}\). Berechne \(\dfrac{dz}{dt}\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\frac{dz}{dt}=\frac{\partial f}{\partial x}\cdot 1+\frac{\partial f}{\partial y}\cdot 2t\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\dfrac{\partial f}{\partial x}=\dfrac{1}{y^2+1},\quad\dfrac{\partial f}{\partial
+                y}=-\dfrac{2xy}{(y^2+1)^2}\)<br><br>
+                Einsetzen \(x=t,y=t^2\):<br>
+                \(\dfrac{dz}{dt}=\dfrac{1}{t^4+1}-\dfrac{2t\cdot t^2}{(t^4+1)^2}\cdot
+                2t=\dfrac{t^4+1-4t^4}{(t^4+1)^2}=\dfrac{1-3t^4}{(t^4+1)^2}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── JACOBI ── -->
+    <div id="jacobi" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Jacobi-Matrix &amp; Kettenregel für Vektorfunktionen</div>
+        <div class="cat-count">5 Aufgaben · 6 Prüfungen</div>
+        <div class="cat-desc">Berechnung von \(J_f\) für vektorwertige Funktionen, oft mit kommutativem Diagramm.
+          Kettenregel: \(J_{g\circ f}=J_g\cdot J_f\).</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020_2</span><span class="badge badge-pts">7+9
+                  Pkt</span></div>
+              <div class="task-formula">Softmax \(\sigma_i(\mathbf{x})=\dfrac{e^{x_i}}{\sum_k e^{x_k}}\). (a) Alle
+                Komponenten von \(J_\sigma\). (b) Zeige \(J_\sigma=\text{diag}(\sigma)-\sigma\sigma^\top\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Fallunterscheidung \(i=j\) vs \(i\neq j\).
+              <div class="tip-box">
+                <div class="tip-label">ML-Relevanz</div>Softmax-Jacobi bei Backpropagation in neuronalen Netzen.
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(J_{ij}=\dfrac{\partial\sigma_i}{\partial
+                x_j}=\begin{cases}\sigma_i(1-\sigma_i)&i=j\\-\sigma_i\sigma_j&i\neq j\end{cases}\)<br><br>
+                <b>(b)</b> \([\text{diag}(\sigma)]_{ij}=\delta_{ij}\sigma_i\) und
+                \([\sigma\sigma^\top]_{ij}=\sigma_i\sigma_j\).<br>
+                Also: \([\text{diag}(\sigma)-\sigma\sigma^\top]_{ij}=\delta_{ij}\sigma_i-\sigma_i\sigma_j=J_{ij}\) ✓
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021</span><span class="badge badge-pts">10
+                  Pkt</span></div>
+              <div class="task-formula">\(g=f_n\circ\cdots\circ f_1\), \(f_i(\mathbf{x})=M_i\mathbf{x}+\mathbf{b}_i\).
+                Berechne \(J_g(\mathbf{x})\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(J_{f_i}=M_i\) (affine Funktion). Kettenregel: \(J_g=M_n\cdots M_1\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                Da \((J_{f_i})_{jk}=\dfrac{\partial}{\partial
+                x_k}(M_i\mathbf{x}+\mathbf{b}_i)_j=\dfrac{\partial}{\partial x_k}\sum_l (M_i)_{jl}x_l=(M_i)_{jk}\), gilt
+                \(J_{f_i}=M_i\).<br><br>
+                Kettenregel für \(n\) Funktionen: \(J_g=J_{f_n}\cdot J_{f_{n-1}}\cdots J_{f_1}=M_n\cdot M_{n-1}\cdots
+                M_1\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2022</span><span class="badge badge-pts">10
+                  Pkt</span></div>
+              <div class="task-formula">\(f(X)=X\cdot A\). Zeige: \(\dfrac{\partial f}{\partial x_{ij}}=E_{ij}\cdot A\).
+              </div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(E_{ij}\) hat 1 an \((i,j)\), sonst 0. Matrixmultiplikation komponentenweise nachrechnen.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \((f(X))_{kl}=\sum_m X_{km}A_{ml}\)<br><br>
+                \(\dfrac{\partial}{\partial
+                x_{ij}}(f(X))_{kl}=\sum_m\delta_{ki}\delta_{mj}A_{ml}=\delta_{ki}A_{jl}\)<br><br>
+                \((E_{ij}\cdot A)_{kl}=\sum_m (E_{ij})_{km}A_{ml}=\sum_m\delta_{ki}\delta_{mj}A_{ml}=\delta_{ki}A_{jl}\)
+                ✓
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2024</span><span class="badge badge-pts">20
+                  Pkt</span></div>
+              <div class="task-formula">\(g(x,y)=xy^2\), \(h(x)=(\cos x,\sin x,x)^\top\), \(k(x,y,z)=(x+y,\ln z)^\top\).
+                Berechne \(J_f(\pi,1)\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Alle drei Jacobi-Matrizen berechnen, dann \(J_k\cdot J_h\cdot J_g\) bei \((\pi,1)\) auswerten.
+              <div class="tip-box">
+                <div class="tip-label">Aufwand</div>Größte Jacobi-Aufgabe – sorgfältig vorgehen.
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(g(\pi,1)=\pi\), \(\nabla g=(1,2\pi)\)<br>
+                \(h'(\pi)=(-\sin\pi,\cos\pi,1)^\top=(0,-1,1)^\top\)<br>
+                \(J_k(h(\pi))=J_k(0,-1,\pi)=\begin{pmatrix}1&1&0\\0&0&\frac{1}{\pi}\end{pmatrix}\)<br><br>
+                \(J_f(\pi,1)=J_k\cdot h'\cdot\nabla
+                g=\begin{pmatrix}1&1&0\\0&0&\frac{1}{\pi}\end{pmatrix}\begin{pmatrix}0\\-1\\1\end{pmatrix}(1,2\pi)\)<br>
+                \(=\begin{pmatrix}-1\\\frac{1}{\pi}\end{pmatrix}(1,2\pi)=\begin{pmatrix}-1&-2\pi\\\frac{1}{\pi}&2\end{pmatrix}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">10
+                  Pkt</span></div>
+              <div class="task-formula">\(\mathbf{h}(t)=(t,t^2,t^3)^\top\),
+                \(g=\begin{pmatrix}x^2+z^2\\y\end{pmatrix}\), \(w=\begin{pmatrix}e^x\\y^2\end{pmatrix}\). \(f=w\circ
+                g\circ\mathbf{h}\). Berechne \(\frac{d}{dt}f\big|_{t=1}\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(J_f=J_w\cdot J_g\cdot J_h\), alle berechnen, Produkt bei \(t=1\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\mathbf{h}(1)=(1,1,1)^\top\), \(g(\mathbf{h}(1))=(2,1)^\top\),
+                \(J_h=\begin{pmatrix}1\\2t\\3t^2\end{pmatrix}\big|_1=\begin{pmatrix}1\\2\\3\end{pmatrix}\)<br><br>
+                \(J_g=\begin{pmatrix}2x&0&2z\\0&1&0\end{pmatrix}\big|_{(1,1,1)}=\begin{pmatrix}2&0&2\\0&1&0\end{pmatrix}\)<br><br>
+                \(J_w=\begin{pmatrix}e^x&0\\0&2y\end{pmatrix}\big|_{(2,1)}=\begin{pmatrix}e^2&0\\0&2\end{pmatrix}\)<br><br>
+                \(\frac{d}{dt}f\big|_1=\begin{pmatrix}e^2&0\\0&2\end{pmatrix}\begin{pmatrix}2&0&2\\0&1&0\end{pmatrix}\begin{pmatrix}1\\2\\3\end{pmatrix}=\begin{pmatrix}6e^2\\4\end{pmatrix}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── STATIONÄRE PUNKTE ── -->
+    <div id="stationary" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Stationäre Punkte finden</div>
+        <div class="cat-count">9 Aufgaben · 9 Prüfungen</div>
+        <div class="cat-desc">Gleichungssystem \(\nabla f=\mathbf{0}\) lösen – oft mit Log-Trick oder Beobachtung
+          \(e^{(\cdot)}\neq 0\).</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">10
+                  Pkt</span></div>
+              <div class="task-formula">\(f(x,y)=\ln(x^4-xy+y^2+1)\). Alle stationären Punkte.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Zähler der partiellen Ableitungen = 0 (Nenner stets \(>0\)).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\nabla f=\dfrac{1}{x^4-xy+y^2+1}(4x^3-y,\;-x+2y)=\mathbf{0}\)<br><br>
+                Da Nenner \(>0\): \(4x^3-y=0\) und \(-x+2y=0\Rightarrow x=2y\)<br>
+                Einsetzen: \(4(2y)^3=y\Rightarrow 32y^3=y\Rightarrow y(32y^2-1)=0\)<br><br>
+                Drei stationäre Punkte:<br>
+                \((x,y)=(0,0),\quad\left(\tfrac{2}{\sqrt{32}},\tfrac{1}{\sqrt{32}}\right),\quad\left(-\tfrac{2}{\sqrt{32}},-\tfrac{1}{\sqrt{32}}\right)\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020_2</span><span class="badge badge-pts">10
+                  Pkt</span></div>
+              <div class="task-formula">\(f(\mathbf{x})=(\mathbf{x}-\mathbf{y})^\top(3\mathbf{x}-\mathbf{y})\),
+                \(\mathbf{y}\in\mathbb{R}^n\) fest.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Ausmultiplizieren, \(\nabla f=\mathbf{0}\) → lineares System.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\dfrac{\partial}{\partial x_i}f=6x_i-4y_i=0\Rightarrow x_i=\dfrac{2}{3}y_i\)<br><br>
+                Eindeutiger stationärer Punkt: \(\mathbf{x}^*=\dfrac{2}{3}\mathbf{y}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021</span><span class="badge badge-pts">9
+                  Pkt</span></div>
+              <div class="task-formula">\(\displaystyle f(\mathbf{x})=\ln(x_1^1\cdot x_2^2\cdots x_n^n)-\sum_{i=1}^n
+                x_i,\quad x_i>0\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Log-Trick: \(\sum_k k\ln x_k\). Ableitung: \(\frac{i}{x_i}-1=0\Rightarrow x_i=i\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\ln\prod x_k^k=\sum_k k\ln x_k\), daher \(f(\mathbf{x})=\sum_k(k\ln x_k-x_k)\)<br><br>
+                \(\dfrac{\partial f}{\partial x_i}=\dfrac{i}{x_i}-1=0\Rightarrow x_i=i\)<br><br>
+                Stationärer Punkt: \(\mathbf{x}^*=(1,2,3,\ldots,n)^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021_2</span><span class="badge badge-pts">11
+                  Pkt</span></div>
+              <div class="task-formula">\(f(x,y,z)=\ln(xy)+xy+xz^2,\quad x,y>0\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\frac{\partial f}{\partial z}=2xz=0\Rightarrow z=0\). Dann \(x,y\) lösen.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(f=\ln x+\ln y+xy+xz^2\)<br>
+                \(\dfrac{\partial f}{\partial x}=\dfrac{1}{x}+y+z^2=0,\quad\dfrac{\partial f}{\partial
+                y}=\dfrac{1}{y}+x=0,\quad\dfrac{\partial f}{\partial z}=2xz=0\)<br><br>
+                Da \(x>0\): \(z=0\), dann \(\frac{1}{y}+x=0\) → kein \(x>0,y>0\) möglich!<br>
+                \(\Rightarrow\) Es gibt keine stationären Punkte im Bereich \(x,y>0\).
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2022 &amp; FS2023</span><span
+                  class="badge badge-pts">11+12 Pkt</span></div>
+              <div class="task-formula">FS2022: \(f(\mathbf{x})=\ln(x_1^1\cdots x_n^n)-\sum
+                x_i^2\)&nbsp;&nbsp;&nbsp;FS2023: \(f(\mathbf{x})=\ln(x_1\cdots x_n)-|\mathbf{x}|^2\)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Log-Trick, dann \(\nabla f=\mathbf{0}\).
+              <div class="tip-box">
+                <div class="tip-label">Muster</div>Dieser Typ (Log-Produkt minus Norm) taucht 3× auf – Log-Trick sofort
+                anwenden!
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>FS2022:</b> \(\dfrac{i}{x_i}-2x_i=0\Rightarrow x_i=\sqrt{i/2}\)&nbsp;&nbsp;&nbsp;Stationärer Punkt:
+                \(\mathbf{x}^*=(\sqrt{1/2},\sqrt{2/2},\ldots,\sqrt{n/2})^\top\)<br><br>
+                <b>FS2023:</b> \(\sum_k\ln x_k-\sum x_i^2\), Ableitung: \(\dfrac{1}{x_i}-2x_i=0\Rightarrow
+                x_i=\dfrac{1}{\sqrt{2}}\) für alle \(i\)<br>
+                Stationärer Punkt: \(\mathbf{x}^*=\frac{1}{\sqrt{2}}(1,1,\ldots,1)^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">9
+                  Pkt</span></div>
+              <div class="task-formula">\(f(x,y)=ye^{-2x^2+2xy-y^2}\). Alle stationären Punkte.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(e^{(\cdot)}\neq 0\): Faktoren separat nullsetzen.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(f_x=(-4x+2y)ye^{(\cdot)}=0\Rightarrow y=0\) oder \(y=2x\)<br>
+                \(f_y=e^{(\cdot)}+y(2x-2y)e^{(\cdot)}=0\Rightarrow 1+y(2x-2y)=0\)<br><br>
+                \(y=0\) löst \(f_y=0\) nicht (\(1\neq 0\)). Also \(y=2x\):<br>
+                \(1+2x(2x-4x)=-4x^2+1=0\Rightarrow x=\pm\tfrac{1}{2}\)<br><br>
+                Stationäre Punkte: \(\left(\tfrac{1}{2},1\right)\) und \(\left(-\tfrac{1}{2},-1\right)\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── HESSE ── -->
+    <div id="hessian" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Hesse-Matrix &amp; Klassifikation stationärer Punkte</div>
+        <div class="cat-count">8 Aufgaben · 10 Prüfungen</div>
+        <div class="cat-desc">Hesse-Matrix berechnen, Definitheit via \(\mathbf{v}^\top H\mathbf{v}\), LDL-Zerlegung
+          oder quadratischer Ergänzung prüfen.</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">8
+                  Pkt</span></div>
+              <div class="task-formula">Hesse-Matrix von \(f(x,y)=\ln(x^2+y)\) berechnen.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Alle zweiten partiellen Ableitungen: \(f_{xx},f_{xy},f_{yy}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(f_x=\dfrac{2x}{x^2+y},\quad f_y=\dfrac{1}{x^2+y}\)<br><br>
+                \(f_{xx}=\dfrac{2(x^2+y)-4x^2}{(x^2+y)^2}=\dfrac{2y-2x^2}{(x^2+y)^2}\)<br>
+                \(f_{xy}=f_{yx}=-\dfrac{2x}{(x^2+y)^2},\quad f_{yy}=-\dfrac{1}{(x^2+y)^2}\)<br><br>
+                \(H(x,y)=\dfrac{1}{(x^2+y)^2}\begin{pmatrix}2y-2x^2&-2x\\-2x&-1\end{pmatrix}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019_2</span><span class="badge badge-pts">17
+                  Pkt</span></div>
+              <div class="task-formula">\(H=\begin{pmatrix}2&2&4\\2&1&2\\4&2&1\end{pmatrix}\) bei \((0,0,0)\). Max, Min
+                oder Sattel?</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Quadratische Ergänzung der Form \(\mathbf{v}^\top H\mathbf{v}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(q=2x^2+4xy+8xz+y^2+4yz+z^2\)<br><br>
+                Quadratische Ergänzung:<br>
+                \(q=2(x+y+2z)^2-(y+2z)^2-3z^2\)<br><br>
+                Die Vorzeichen der quadratischen Terme sind gemischt → \(H\) ist <b>indefinit</b> → <b>Sattelpunkt</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020 &amp; FS2022</span><span
+                  class="badge badge-pts">34 Pkt</span></div>
+              <div class="task-formula">\(f(x,y,z)=x^2e^{y+z}-\ln(y-z)+y+z^2\). Stationäre Punkte finden + Typ
+                bestimmen.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\nabla f=\mathbf{0}\), dann Hesse bei stat. Punkt, Definitheit prüfen.
+              <div class="tip-box">
+                <div class="tip-label">Achtung</div>Identische Aufgabe in FS2020 und FS2022 – die umfangreichste Aufgabe
+                in beiden Prüfungen!
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>Schritt 1:</b> \(\nabla
+                f=(2xe^{y+z},\;x^2e^{y+z}-\frac{1}{y-z}+1,\;x^2e^{y+z}+\frac{1}{y-z}+2z)=\mathbf{0}\)<br>
+                \(\Rightarrow x=0,\;y-z=1,\;z=-\tfrac{1}{2}\Rightarrow\) Stationärer Punkt:
+                \((0,\tfrac{1}{2},-\tfrac{1}{2})\)<br><br>
+                <b>Schritt 2:</b> Hesse bei \((0,\tfrac{1}{2},-\tfrac{1}{2})\):<br>
+                \(H=\begin{pmatrix}2&0&0\\0&1&-1\\0&-1&3\end{pmatrix}\)<br><br>
+                Quadratische Form: \(q=2x^2+(y-z)^2+2z^2\) → <b>positiv definit</b> → <b>lokales Minimum</b>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2022</span><span class="badge badge-pts">7
+                  Pkt</span></div>
+              <div class="task-formula">Hesse-Matrix von \(f(x,y)=\ln(x\cdot y)\), \(x,y>0\). Positiv definit, negativ
+                definit oder indefinit?</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(H\) berechnen, Definitheit via \(\det H\) und \(f_{xx}\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\ln(xy)=\ln x+\ln y\Rightarrow f_{xx}=-\dfrac{1}{x^2},\;f_{yy}=-\dfrac{1}{y^2},\;f_{xy}=0\)<br><br>
+                \(H=\begin{pmatrix}-1/x^2&0\\0&-1/y^2\end{pmatrix}\)<br><br>
+                \(f_{xx}<0\) und \(\det H=\frac{1}{x^2y^2}>0\Rightarrow H\) ist <b>negativ definit</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2024</span><span class="badge badge-pts">8+10+3
+                  Pkt</span></div>
+              <div class="task-formula">(a) Hesse von \(f(x,y)=x^5y\sin y\)&nbsp;&nbsp;(b) \(H_f(p)\) bei \(p=(2,0,-1)\)
+                gegeben&nbsp;&nbsp;(c) Beispiel-\(H\) ohne Aussage</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (b) LDL oder Hurwitz. (c) Positiv semidefinit.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(H_f=\begin{pmatrix}20x^3y\sin y & 5x^4(\sin y+y\cos y)\\5x^4(\sin y+y\cos y)&x^5(2\cos
+                y-y\sin y)\end{pmatrix}\)<br><br>
+                <b>(b)</b> \(H_f(p)=\begin{pmatrix}1&2&0\\2&6&-2\\0&-2&1\end{pmatrix}\)<br>
+                Quadr. Ergänzung: \(q=(x+2y)^2+2(y-z)^2-z^2\) → gemischte Vorzeichen → <b>indefinit</b> →
+                <b>Sattelpunkt</b><br><br>
+                <b>(c)</b> Beispiel: \(H=\begin{pmatrix}3&0&0\\0&2&0\\0&0&0\end{pmatrix}\) (positiv semidefinit)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">6+2+8
+                  Pkt</span></div>
+              <div class="task-formula">(a) Hesse von \(z=\dfrac{x}{y+1}\)&nbsp;&nbsp;(b) \(\mathbf{v}^\top
+                H_f(p_1)\mathbf{v}=-4(v_1+\tfrac{1}{2}v_2)^2-2v_2^2\)&nbsp;&nbsp;(c) \(\mathbf{v}^\top
+                H_f(p_2)\mathbf{v}\) durch quad. Ergänzung</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (b) negativ definit → Maximum. (c) Quadratische Ergänzung → positiv definit → Minimum.
+              <div class="tip-box">
+                <div class="tip-label">Kerntechnik</div>Quadratische Ergänzung ist die bevorzugte
+                Klassifikationsmethode.
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(f_x=\dfrac{1}{y+1},\;f_y=-\dfrac{x}{(y+1)^2}\)<br>
+                \(f_{xx}=0,\;f_{xy}=-\dfrac{1}{(y+1)^2},\;f_{yy}=\dfrac{2x}{(y+1)^3}\)<br>
+                \(H=\begin{pmatrix}0&-\frac{1}{(y+1)^2}\\-\frac{1}{(y+1)^2}&\frac{2x}{(y+1)^3}\end{pmatrix}\)<br><br>
+                <b>(b)</b> Form \(-4(v_1+\tfrac{1}{2}v_2)^2-2v_2^2\leq 0\) für alle \(\mathbf{v}\), gleich 0 nur bei
+                \(\mathbf{v}=\mathbf{0}\) → <b>negativ definit</b> → lokales <b>Maximum</b>.<br><br>
+                <b>(c)</b> \(4v_1^2-4v_1v_2+3v_2^2=4(v_1-\tfrac{1}{2}v_2)^2+2v_2^2>0\) → <b>positiv definit</b> →
+                lokales <b>Minimum</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── LINEARISIERUNG ── -->
+    <div id="linear" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Linearisierung</div>
+        <div class="cat-count">4 Aufgaben</div>
+        <div class="cat-desc">Taylor-Approximation 1. Ordnung: \(L(\mathbf{x})=f(\mathbf{x}_0)+\nabla
+          f(\mathbf{x}_0)\cdot(\mathbf{x}-\mathbf{x}_0)\). Für Näherungswerte oder Newton-Iterationen.</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2019</span><span class="badge badge-pts">20
+                  Pkt</span></div>
+              <div class="task-formula">\(f(x,y,z)=\begin{pmatrix}x^2\sin y\\y+\cos(x-z)\end{pmatrix}\) bei
+                \((1.1,-0.1,0.9)\) approximieren. Entwicklungspunkt: \((1,0,1)\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Vektorfunktion: \(L(\mathbf{x})=f(\mathbf{x}_0)+J_f(\mathbf{x}_0)\cdot(\mathbf{x}-\mathbf{x}_0)\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(f(1,0,1)=\begin{pmatrix}0\\1\end{pmatrix}\)<br><br>
+                \(J_f(1,0,1)=\begin{pmatrix}2x\sin y&x^2\cos
+                y&0\\-\sin(x-z)&1&\sin(x-z)\end{pmatrix}\!\Big|_{(1,0,1)}=\begin{pmatrix}0&1&0\\0&1&0\end{pmatrix}\)<br><br>
+                \(f(1.1,-0.1,0.9)\approx\begin{pmatrix}0\\1\end{pmatrix}+\begin{pmatrix}0&1&0\\0&1&0\end{pmatrix}\begin{pmatrix}0.1\\-0.1\\-0.1\end{pmatrix}=\begin{pmatrix}-0.1\\0.9\end{pmatrix}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020</span><span class="badge badge-pts">20
+                  Pkt</span></div>
+              <div class="task-formula">System \(\begin{pmatrix}x+e^y\\x+e^{x-y}\end{pmatrix}=\mathbf{0}\) hat
+                Näherungslösung bei \((-\tfrac{1}{2},-\tfrac{1}{4})\). Newton-Schritt anwenden.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Newton: \(\mathbf{x}_\text{neu}=\mathbf{x}_0-J_f(\mathbf{x}_0)^{-1}\cdot f(\mathbf{x}_0)\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(J_f=\begin{pmatrix}1&e^y\\1+e^{x-y}&-e^{x-y}\end{pmatrix}\Big|_{(-1/2,-1/4)}=\begin{pmatrix}1&e^{-1/4}\\1+e^{-1/4}&-e^{-1/4}\end{pmatrix}\)<br><br>
+                Newton-Schritt: \(\mathbf{x}_\text{neu}=\begin{pmatrix}-1/2\\-1/4\end{pmatrix}-J_f^{-1}\cdot
+                f\!\left(-\tfrac{1}{2},-\tfrac{1}{4}\right)\)<br><br>
+                Ergebnis (via Gauß): \(x\approx-\dfrac{5}{4e^{1/4}+2},\quad y\approx\dfrac{-5}{8e^{1/4}+4}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">3+1
+                  Pkt</span></div>
+              <div class="task-formula">Vereinfachtes Newton: \(x_n=x_{n-1}-\dfrac{f(x_{n-1})}{f'(x_0)}\) für
+                \(f(x)=x^2-2\), \(x_0=1\). Berechne \(x_1,x_2\) und \(\lim x_n\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(f'(x_0)=2\) (fest). Iterieren.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(f'(x_0)=2x_0=2\) (fest für alle Schritte)<br>
+                \(x_1=1-\dfrac{1^2-2}{2}=1+\dfrac{1}{2}=\dfrac{3}{2}\)<br>
+                \(x_2=\dfrac{3}{2}-\dfrac{(3/2)^2-2}{2}=\dfrac{3}{2}-\dfrac{1/4}{2}=\dfrac{11}{8}\)<br><br>
+                \(\lim_{n\to\infty}x_n=\sqrt{2}\approx 1.414\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">7
+                  Pkt</span></div>
+              <div class="task-formula">Linearisierung von \(f(x,y)=yx^3-xy-7\) bei \((2.1,0.9)\). Entwicklungspunkt:
+                \((2,1)\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(L=f(x_0,y_0)+f_x(x_0,y_0)(x-x_0)+f_y(x_0,y_0)(y-y_0)\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(f(2,1)=1\cdot 8-2\cdot 1-7=-1\)<br>
+                \(f_x=3yx^2-y\Big|_{(2,1)}=12-1=11\)<br>
+                \(f_y=x^3-x\Big|_{(2,1)}=8-2=6\)<br><br>
+                \(L=-1+11(x-2)+6(y-1)\)<br>
+                Bei \((2.1,0.9)\): \(L=-1+11\cdot 0.1+6\cdot(-0.1)=-1+1.1-0.6=-0.5\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── WAHRSCHEINLICHKEIT & MLE ── -->
+    <div id="prob" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Wahrscheinlichkeit &amp; Maximum Likelihood</div>
+        <div class="cat-count">7 Aufgaben · 7 Prüfungen</div>
+        <div class="cat-desc">Wahrscheinlichkeitsdichten, Transformation \(Y=g(X)\), MLE:
+          \(\hat{\theta}=\arg\max_\theta\,\ell(\theta)\).</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2020</span><span class="badge badge-pts">7+4+3
+                  Pkt</span></div>
+              <div class="task-formula">Exponentialverteilung \(f(t)=\lambda e^{-\lambda t}\). (a) Likelihood. (b) Neg.
+                Log-Likelihood. (c) MLE für \(\lambda\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Standardaufgabe: Likelihood aufstellen, Log maximieren.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                Beobachtungen: \(t_1=7,t_2=16,t_3=32,t_4=44\)<br><br>
+                <b>(a)</b> \(\ell(\lambda)=\lambda^4 e^{-\lambda(7+16+32+44)}=\lambda^4 e^{-99\lambda}\)<br><br>
+                <b>(b)</b> \(-\ln\ell(\lambda)=99\lambda-4\ln\lambda\)<br><br>
+                <b>(c)</b>
+                \(\dfrac{d(-\ln\ell)}{d\lambda}=99-\dfrac{4}{\lambda}=0\Rightarrow\hat{\lambda}=\dfrac{4}{99}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2022</span><span class="badge badge-pts">12
+                  Pkt</span></div>
+              <div class="task-formula">Münzwurf: 100 Würfe, 35× Kopf. MLE für \(p\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Bernoulli-Likelihood, Log maximieren.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(\ell(p)=p^{35}(1-p)^{65}\)<br>
+                \(\ln\ell=35\ln p+65\ln(1-p)\)<br>
+                \(\dfrac{d\ln\ell}{dp}=\dfrac{35}{p}-\dfrac{65}{1-p}=0\Rightarrow 35(1-p)=65p\Rightarrow\hat{p}=0.35\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2023</span><span class="badge badge-pts">14+8+14
+                  Pkt</span></div>
+              <div class="task-formula">\(X\sim\text{unif}(0,1)\), \(Y=X^p\). (a) \(f_Y(y)\). (b) Methode für \(p\). (c)
+                MLE aus \(y_1=1/3,y_2=1/2,y_3=1/4\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) Transformationsformel. (b) MLE. (c) Ableitung = 0.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(y=x^p\Rightarrow x=y^{1/p}\), \(\left|\dfrac{dx}{dy}\right|=\dfrac{1}{p}y^{1/p-1}\)<br>
+                \(f_Y(y)=f_X(y^{1/p})\cdot\dfrac{1}{p}y^{1/p-1}=\dfrac{1}{p}y^{1/p-1}\) für \(y\in(0,1)\)<br><br>
+                <b>(b)</b> MLE: \(\ell(p)=\prod_i f_Y(y_i)=\dfrac{1}{p^n}\prod y_i^{1/p-1}\)<br><br>
+                <b>(c)</b> \(-\ln\ell=n\ln p-(1/p-1)\sum\ln y_i\)<br>
+                Ableitung = 0: \(\hat{p}=\dfrac{-\sum\ln y_i}{n}=\dfrac{\ln 3+\ln 2+\ln 4}{3}=\dfrac{\ln 24}{3}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2025</span><span class="badge badge-pts">4+4+6
+                  Pkt</span></div>
+              <div class="task-formula">Pareto-Dichte: \(f(x)=\dfrac{a}{x^{a+1}}\), \(x\geq 1\). (a) Zeige Normalität.
+                (b) Likelihood. (c) MLE für Stichprobe \(1,2,3,2,1\).</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              (a) Integral ausrechnen. (b) Produkt. (c) Neg. Log-Likelihood ableiten.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>(a)</b> \(\int_1^\infty\dfrac{a}{x^{a+1}}dx=a\cdot\left[-\dfrac{1}{a}x^{-a}\right]_1^\infty=1\)
+                ✓<br><br>
+                <b>(b)</b> \(\ell(a)=a^n\prod x_i^{-(a+1)}\)<br>
+                \(-\ln\ell=-n\ln a+(a+1)\sum\ln x_i\)<br><br>
+                <b>(c)</b> \(\dfrac{d(-\ln\ell)}{da}=-\dfrac{n}{a}+\sum\ln x_i=0\Rightarrow\hat{a}=\dfrac{n}{\sum\ln
+                x_i}\)<br>
+                Mit \(\sum\ln x_i=0+\ln 2+\ln 3+\ln 2+0=\ln 12\): \(\hat{a}=\dfrac{5}{\ln 12}\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── VERSCHIEDENES ── -->
+    <div id="misc" class="category">
+      <div class="cat-header">
+        <div class="cat-title">Verschiedenes</div>
+        <div class="cat-count">4 Aufgaben</div>
+        <div class="cat-desc">Konzeptaufgaben, Indexnotation, Gradient Descent, Beweise.</div>
+      </div>
+      <div class="tasks">
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2024</span><span class="badge badge-pts">5
+                  Pkt</span></div>
+              <div class="task-formula">\(A_{ij}=\displaystyle\sum_{k,\ell}\delta_{k\ell}B_{jk}C_{i\ell}\). Schreibe
+                \(A\) ohne Indizes.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              \(\delta_{k\ell}=1\) nur wenn \(k=\ell\).
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                \(A_{ij}=\sum_k\sum_\ell\delta_{k\ell}B_{jk}C_{i\ell}=\sum_k B_{jk}C_{ik}=\sum_k
+                C_{ik}B_{jk}^\top=(CB^\top)_{ij}\)<br><br>
+                \(\Rightarrow A=CB^\top\)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2021 &amp; FS2025</span><span
+                  class="badge badge-pts">6+3 / 4 Pkt</span></div>
+              <div class="task-formula">Kontourplot gegeben. Stationäre Punkte klassifizieren und Gradient
+                Descent/Ascent Pfade skizzieren.</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Kontourlinien lesen: dichter = steilerer Gradient. Descent folgt \(-\nabla f\).
+              <div class="tip-box">
+                <div class="tip-label">Tipp</div>Sattelpunkte: Minimum in einer, Maximum in der senkrechten Richtung.
+              </div>
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>FS2021:</b> Im Kontourplot (gelb = hoch, blau = tief):<br>
+                Oben links: lokales Minimum · Oben Mitte: Sattelpunkt · Oben rechts: lokales Minimum<br>
+                Unten links: Sattelpunkt · Unten Mitte: lokales Maximum · Unten rechts: Sattelpunkt<br><br>
+                Gradient Descent vom roten Punkt bewegt sich senkrecht zu den Kontourlinien in Richtung abnehmender
+                Funktionswerte → konvergiert zum oberen linken Minimum.<br><br>
+                <b>FS2025:</b> Gradient Descent (\(x_n\)) → konvergiert zu \(s_1\). Gradient Ascent (\(q_n\)) →
+                divergiert oder konvergiert zu \(s_2\).
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card" onclick="toggle(this)">
+          <div class="task-top">
+            <div>
+              <div class="task-meta"><span class="badge badge-year">FS2024</span><span class="badge badge-pts">6
+                  Pkt</span></div>
+              <div class="task-formula">Beschreibe zwei Szenarien, wo Gradient Descent nicht das globale Minimum findet.
+                (Keine Rechnung.)</div>
+            </div><span class="chevron">&#8964;</span>
+          </div>
+          <div class="task-detail">
+            <div class="task-detail-inner">
+              Lokale Minima und Schrittweite als Hauptproblem.
+              <div class="sol-toggle" onclick="toggleSol(event,this)"><svg width="14" height="14" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>Musterlösung anzeigen</div>
+              <div class="sol-body">
+                <b>Szenario 1 (häufig):</b> Lokales Minimum – Gradient Descent konvergiert zu einem lokalen, nicht
+                globalen Minimum. Häufig bei nicht-konvexen Funktionen.<br>
+                Lösung: mehrere Startpunkte (random restarts).<br><br>
+                <b>Szenario 2 (selten):</b> Sattelpunkt – der Algorithmus startet genau auf einem Sattelpunkt und bleibt
+                dort stecken (Gradient = 0). Sehr unwahrscheinlich in der Praxis.<br>
+                Lösung: anderer Startpunkt oder Momentum.<br><br>
+                <b>Szenario 3 (lernratenabhängig):</b> Zu große Schrittweite → Oszillation/Divergenz um das Minimum.<br>
+                Lösung: kleinere Lernrate oder Lernraten-Scheduling.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- .page -->
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea'] }
+    };
+
+    const STORAGE_KEY = 'mathfml_status';
+    let activeFilter = 'all';
+
+    function loadStatuses() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch { return {}; }
+    }
+
+    function saveStatuses(s) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    }
+
+    function getCardId(card) {
+      // Use the badge text + formula text as a stable key
+      const meta = card.querySelector('.task-meta')?.textContent.trim() || '';
+      const formula = card.querySelector('.task-formula')?.textContent.trim().slice(0, 60) || '';
+      return btoa(encodeURIComponent(meta + '|' + formula)).slice(0, 40);
+    }
+
+    function applyStatus(card, status) {
+      card.dataset.status = status || '';
+      const btns = card.querySelectorAll('.status-btn');
+      btns.forEach(b => {
+        b.classList.remove('verstanden', 'wiederholen');
+        if (b.dataset.val === status) b.classList.add(status);
+      });
+      applyFilterToCard(card);
+    }
+
+    function setStatus(event, btn, val) {
+      event.stopPropagation();
+      const card = btn.closest('.task-card');
+      const id = getCardId(card);
+      const statuses = loadStatuses();
+      const current = statuses[id];
+      // Toggle off if already set
+      const newVal = (current === val) ? '' : val;
+      if (newVal) statuses[id] = newVal;
+      else delete statuses[id];
+      saveStatuses(statuses);
+      applyStatus(card, newVal);
+    }
+
+    function applyFilterToCard(card) {
+      const status = card.dataset.status || '';
+      if (activeFilter === 'all') {
+        card.classList.remove('hidden-by-filter');
+      } else if (activeFilter === 'none') {
+        card.classList.toggle('hidden-by-filter', status !== '');
+      } else {
+        card.classList.toggle('hidden-by-filter', status !== activeFilter);
+      }
+    }
+
+    function setFilter(val, btn) {
+      activeFilter = val;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.task-card').forEach(applyFilterToCard);
+    }
+
+    function injectStatusButtons() {
+      const statuses = loadStatuses();
+      document.querySelectorAll('.task-card').forEach(card => {
+        const top = card.querySelector('.task-top');
+        if (!top || top.querySelector('.status-btns')) return;
+        const id = getCardId(card);
+        const status = statuses[id] || '';
+        card.dataset.status = status;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'status-btns';
+        wrap.innerHTML = `
+          <button class="status-btn${status === 'verstanden' ? ' verstanden' : ''}" data-val="verstanden"
+            onclick="setStatus(event,this,'verstanden')" title="Verstanden">✓</button>
+          <button class="status-btn${status === 'wiederholen' ? ' wiederholen' : ''}" data-val="wiederholen"
+            onclick="setStatus(event,this,'wiederholen')" title="Wiederholen">↺</button>`;
+        // Group status buttons + chevron together on the right
+        const chevron = top.querySelector('.chevron');
+        const rightGroup = document.createElement('div');
+        rightGroup.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0;';
+        chevron.parentNode.insertBefore(rightGroup, chevron);
+        rightGroup.appendChild(wrap);
+        rightGroup.appendChild(chevron);
+      });
+    }
+
+    function showCat(id, btn) {
+      document.querySelectorAll('.category').forEach(c => c.classList.remove('visible'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('visible');
+      btn.classList.add('active');
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
+    }
+
+    function toggle(card) {
+      card.classList.toggle('open');
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([card]);
+    }
+
+    function toggleSol(event, btn) {
+      event.stopPropagation();
+      const solBody = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+      btn.classList.toggle('open');
+      solBody.classList.toggle('visible');
+      btn.childNodes[1].textContent = isOpen ? 'Musterlösung anzeigen' : 'Musterlösung verbergen';
+      if (!isOpen && window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([solBody]);
+    }
+
+    document.addEventListener('DOMContentLoaded', injectStatusButtons);
+  </script>
+</body>
+
+</html>
