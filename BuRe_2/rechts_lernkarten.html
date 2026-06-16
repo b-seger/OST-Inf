@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rechtsvorlesung — Lernkarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F6F3;
+  --surface: #FFFFFF;
+  --surface2: #F0EEE9;
+  --border: #E4E1DA;
+  --border-med: #CBC8C0;
+  --text: #1A1916;
+  --text-muted: #6B6860;
+  --text-faint: #9E9C96;
+  --purple: #534AB7;
+  --purple-light: #EEEDFE;
+  --purple-mid: #AFA9EC;
+  --purple-dark: #3C3489;
+  --green: #1D9E75;
+  --green-light: #E1F5EE;
+  --green-dark: #0F6E56;
+  --red: #C0392B;
+  --red-light: #FDECEA;
+  --red-dark: #922B21;
+  --amber: #D97706;
+  --amber-light: #FEF3C7;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141412;
+    --surface: #1E1D1A;
+    --surface2: #272522;
+    --border: #2E2C28;
+    --border-med: #3D3B36;
+    --text: #F0EDE8;
+    --text-muted: #9E9B94;
+    --text-faint: #6B6860;
+    --purple-light: #1E1B3A;
+    --purple-mid: #534AB7;
+    --green-light: #0B2820;
+    --red-light: #2A100D;
+    --amber-light: #2A1D05;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  }
+}
+
+html { font-size: 16px; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  grid-row: 1 / 3;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-brand h1 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.sidebar-brand p {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+
+.sidebar-nav {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--purple-light); color: var(--purple-dark); }
+.nav-item svg { opacity: 0.6; flex-shrink: 0; }
+.nav-item.active svg { opacity: 1; }
+
+.sidebar-topics { padding: 12px 10px; flex: 1; overflow-y: auto; }
+.sidebar-topics-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+.topic-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+  gap: 6px;
+}
+.topic-item:hover { background: var(--surface2); color: var(--text); }
+.topic-item.active { background: var(--purple-light); color: var(--purple-dark); font-weight: 500; }
+.topic-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--border-med);
+}
+.topic-item.active .topic-dot { background: var(--purple); }
+.topic-name { flex: 1; line-height: 1.35; }
+.topic-pill {
+  font-size: 10px;
+  background: var(--surface2);
+  color: var(--text-faint);
+  padding: 1px 6px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.topic-item.active .topic-pill {
+  background: var(--purple-mid);
+  color: var(--purple-dark);
+}
+@media (prefers-color-scheme: dark) {
+  .topic-item.active .topic-pill { color: #EEEDFE; }
+}
+
+/* ── Main ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.topbar-sub { font-size: 12px; color: var(--text-faint); margin-top: 1px; }
+
+.main { padding: 28px 32px; overflow-y: auto; }
+
+/* ── Views ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Flashcard area ── */
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.card-counter { font-size: 12px; color: var(--text-faint); }
+.card-status { font-size: 12px; }
+.card-status.gut { color: var(--green); }
+.card-status.nochmal { color: var(--amber); }
+
+.progress-track {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.flashcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 24px;
+  min-height: 200px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.flashcard:hover { border-color: var(--border-med); box-shadow: var(--shadow-md); }
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--purple-light);
+  color: var(--purple-dark);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  letter-spacing: 0.01em;
+}
+@media (prefers-color-scheme: dark) {
+  .card-badge { color: var(--purple-mid); }
+}
+
+.card-question {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.45;
+  flex: 1;
+  letter-spacing: -0.01em;
+}
+
+.card-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 20px;
+  text-align: center;
+}
+
+.answer-sep {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+.answer-text {
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+.answer-text strong { color: var(--text); font-weight: 500; }
+.answer-text em { color: var(--text); }
+.answer-text ul, .answer-text ol { padding-left: 1.3rem; margin-top: 6px; }
+.answer-text li { margin-bottom: 5px; }
+
+.art-ref {
+  display: inline-block;
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 4px;
+  letter-spacing: 0.01em;
+}
+
+/* Buttons */
+.controls { display: flex; gap: 8px; }
+.btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn:hover { background: var(--surface2); border-color: var(--border-med); }
+.btn:active { transform: scale(0.98); }
+
+.btn-primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+.btn-primary:hover { background: var(--purple-dark); border-color: var(--purple-dark); }
+
+.btn-success { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+.btn-success:hover { background: #c5ead9; }
+
+.btn-danger { background: var(--red-light); border-color: var(--red); color: var(--red-dark); }
+.btn-danger:hover { background: #f5c8c3; }
+
+/* ── Done state ── */
+.done-state {
+  text-align: center;
+  padding: 48px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.done-emoji { font-size: 44px; margin-bottom: 14px; }
+.done-state h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.done-state p { font-size: 14px; color: var(--text-muted); }
+
+/* ── Day Plan ── */
+.plan-grid { display: flex; flex-direction: column; gap: 6px; }
+.day-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.12s;
+}
+.day-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  min-width: 44px;
+}
+.day-line { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+.day-topic { font-size: 13px; color: var(--text); flex: 1; }
+.day-cards-badge {
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--surface2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.day-row.today { border-color: var(--purple); background: var(--purple-light); }
+.day-row.today .day-num { color: var(--purple-dark); }
+.day-row.today .day-topic { color: var(--purple-dark); font-weight: 500; }
+.day-row.today .day-cards-badge { background: var(--purple-mid); color: var(--purple-dark); }
+.day-row.exam { border-color: var(--red); background: var(--red-light); }
+.day-row.exam .day-num { color: var(--red-dark); }
+.day-row.exam .day-topic { color: var(--red-dark); font-weight: 500; }
+
+/* ── Progress view ── */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+}
+.stat-num { font-size: 28px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+.stat-label { font-size: 11px; color: var(--text-faint); margin-top: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.topic-prog-item { margin-bottom: 14px; }
+.topic-prog-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.topic-prog-name { color: var(--text); }
+.topic-prog-frac { color: var(--text-faint); }
+.progress-track-thin {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill-thin {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ── Mobile ── */
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+  .sidebar { grid-row: auto; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; overflow-x: auto; }
+  .sidebar-brand { padding: 16px; border-bottom: none; border-right: 1px solid var(--border); }
+  .sidebar-nav { padding: 12px; border-bottom: none; display: flex; gap: 4px; }
+  .sidebar-topics { display: none; }
+  .topbar { display: none; }
+  .main { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h1>Recht für Ingenieure</h1>
+      <p>13 Tage · Prüfungsvorbereitung</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showView('lernen', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Lernen
+      </button>
+      <button class="nav-item" onclick="showView('plan', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Lernplan
+      </button>
+      <button class="nav-item" onclick="showView('fortschritt', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-8"/></svg>
+        Fortschritt
+      </button>
+    </nav>
+
+    <div class="sidebar-topics">
+      <div class="sidebar-topics-label">Themen</div>
+      <div id="topicList"></div>
+    </div>
+  </aside>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title" id="topbarTitle">Lernkarten</div>
+      <div class="topbar-sub" id="topbarSub">Wähle ein Thema aus der Seitenleiste</div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <div id="view-lernen" class="view active">
+      <div id="cardArea"></div>
+    </div>
+
+    <div id="view-plan" class="view">
+      <div class="plan-grid" id="dayPlan"></div>
+    </div>
+
+    <div id="view-fortschritt" class="view">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="statGelernt">0</div><div class="stat-label">Gelernt</div></div>
+        <div class="stat-card"><div class="stat-num" id="statWiederholen">0</div><div class="stat-label">Wiederholen</div></div>
+        <div class="stat-card"><div class="stat-num" id="statGesamt">0</div><div class="stat-label">Gesamt</div></div>
+      </div>
+      <div id="topicProgress"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const TOPICS = [
+  { id: 'zgb',          label: 'ZGB Einleitungsartikel',  day: 1 },
+  { id: 'orat',         label: 'OR Allgemeiner Teil',      day: 2 },
+  { id: 'arbeitsrecht', label: 'Arbeitsrecht',             day: 4 },
+  { id: 'kuendigung',   label: 'Kündigung & Schutz',       day: 6 },
+  { id: 'werkauftrag',  label: 'Werkvertrag & Auftrag',    day: 8 },
+  { id: 'it',           label: 'IT-Verträge',              day: 9 },
+  { id: 'haftpflicht',  label: 'Haftpflichtrecht',         day: 10 },
+  { id: 'produkthaftung', label: 'Produktehaftpflicht',    day: 11 },
+];
+
+const CARDS_DATA = {
+  zgb: [
+    { q: 'Was regelt Art. 1 ZGB?', a: '<strong>Anwendung des Rechts:</strong> Das Gesetz findet auf alle Rechtsfragen Anwendung, für die es nach Wortlaut oder Auslegung eine Bestimmung enthält.<br><br>Kann dem Gesetz keine Vorschrift entnommen werden → <strong>Gewohnheitsrecht</strong>; fehlt auch dieses → <strong>Richterrecht</strong> (Richter entscheidet wie Gesetzgeber).' },
+    { q: 'Was bedeutet «Treu und Glauben» nach Art. 2 ZGB?', a: '<strong>Jedermann muss seine Rechte und Pflichten nach Treu und Glauben ausüben.</strong><br><br>Beinhaltet:<ul><li><strong>Vertrauensschutz</strong>: Berechtigtes Vertrauen darf nicht enttäuscht werden</li><li><strong>Verbot widersprüchlichen Verhaltens</strong></li><li><strong>Rechtsmissbrauchsverbot</strong>: Offensichtlich missbräuchliche Rechtsausübung findet keinen Schutz</li></ul>' },
+    { q: 'Was ist Rechtsmissbrauch? Gib ein Beispiel.', a: '<strong>Formelles Beharren auf einem Recht, das offensichtlich missbräuchlich erscheint.</strong> Erst krass stossendes Verhalten (Schadenfreude, Schikane, Rache) ist rechtsmissbräuchlich.<br><br>Beispiel: Vermieter besteht auf Endreinigung einer Wohnung, obwohl er weiss, dass das Haus abgerissen wird — nur um dem Mieter eins auszuwischen.' },
+    { q: 'Was regelt Art. 3 ZGB (Guter Glaube)?', a: '<strong>Wo das Gesetz eine Rechtswirkung an den guten Glauben knüpft, wird dieser vermutet.</strong><br><br>Gutgläubig = Fehlen des Unrechtsbewusstseins trotz Rechtsmangels. «Gutgläubig ist, wer nicht bösgläubig ist.»<br><br><span class="art-ref">Art. 3 ZGB</span> findet nur Anwendung, wo das Gesetz die Rechtsfolge davon abhängig macht.' },
+    { q: 'Nenne ein Beispiel für eine Verletzung von Treu und Glauben.', a: 'Ein <strong>Aktionär, der einem GV-Beschluss zugestimmt hat</strong>, verhält sich treuwidrig, wenn er diesen Beschluss im Nachhinein anficht.<br><br>Oder: Ein Hauseigentümer lehnt Makler-Interessenten ab, kontaktiert aber nach Ende des Maklerverhältnisses denselben Interessenten direkt.' },
+  ],
+  orat: [
+    { q: 'Auf welche 3 Arten entsteht eine Obligation?', a: '<ul><li><strong>Vertrag</strong> <span class="art-ref">Art. 1–40 OR</span></li><li><strong>Unerlaubte Handlung</strong> / Delikt <span class="art-ref">Art. 41–61 OR</span></li><li><strong>Ungerechtfertigte Bereicherung</strong> <span class="art-ref">Art. 62–67 OR</span></li></ul>Weitere: Geschäftsführung ohne Auftrag (Art. 419 ff. OR), culpa in contrahendo, Persönlichkeitsverletzung.' },
+    { q: 'Was sind die 5 Aspekte der Vertragsfreiheit?', a: '<ul><li><strong>Abschlussfreiheit</strong>: ob ein Vertrag abgeschlossen wird</li><li><strong>Partnerwahlfreiheit</strong>: mit wem</li><li><strong>Inhaltsfreiheit</strong>: was vereinbart wird</li><li><strong>Formfreiheit</strong>: in welcher Form</li><li><strong>Aufhebungsfreiheit</strong>: ob und wie aufgehoben</li></ul>' },
+    { q: 'Nenne die Voraussetzungen für einen gültigen Vertrag.', a: '<ul><li>(<strong>Beschränkte</strong>) Handlungsfähigkeit der Parteien</li><li><strong>Konsens</strong> beim Vertragsabschluss</li><li><strong>Formgültigkeit</strong></li><li>Kein <strong>Inhaltsmangel</strong>: nicht unmöglich, nicht rechtswidrig, nicht unsittlich</li><li>Keine <strong>Übervorteilung</strong></li><li>Kein <strong>Willensmangel</strong> (Irrtum, Täuschung, Drohung)</li></ul>' },
+    { q: 'Was ist der Unterschied zwischen natürlichem und normativem Konsens?', a: '<strong>Natürlicher Konsens</strong>: Tatsächliche Einigkeit über die essentialia negotii (unentbehrliche Vertragspunkte) — beide Parteien wollen dasselbe.<br><br><strong>Normativer Konsens</strong>: Kein übereinstimmender Wille, aber übereinstimmende Willenserklärungen nach dem <strong>Vertrauensprinzip</strong> (= versteckter Dissens). Wille nach aussen massgebend.' },
+    { q: 'Nenne die 4 Vertragsformen mit Beispielen.', a: '<ul><li><strong>Formfreiheit</strong> <span class="art-ref">Art. 11 OR</span>: Arbeitsvertrag, Mietvertrag, Kaufvertrag</li><li><strong>Einfache Schriftlichkeit</strong> <span class="art-ref">Art. 13 OR</span>: Schenkungsversprechen, Lehrvertrag, Konkurrenzverbot</li><li><strong>Qualifizierte Schriftlichkeit</strong>: Bürgschaft, Testament</li><li><strong>Öffentliche Beurkundung</strong>: Grundstückkauf, Ehe- und Erbvertrag, Bürgschaft &gt;CHF 2\'000</li></ul>' },
+    { q: 'Was ist der Unterschied zwischen dispositiven und zwingenden Gesetzesbestimmungen?', a: '<strong>Dispositive Bestimmungen</strong>: Gelten nur, wenn die Parteien nichts anderes vereinbart haben (Auffangrecht). Können vertraglich abbedungen werden.<br><br><strong>Zwingende Bestimmungen</strong>: Gehen den vertraglichen Bestimmungen immer vor — auch wenn die Parteien etwas anderes wollen.<br><br>Beispiele zwingend: OR 100 I, zahlreiche Normen im Miet- und Arbeitsrecht.' },
+    { q: 'Was ist eine Stellvertretung mit Ermächtigung?', a: '<strong>Vertreter handelt in fremdem Namen mit Vertretungsmacht</strong> → Wirkungen des Vertrags treffen unmittelbar den Vertretenen.<br><br>Voraussetzungen:<ul><li>Vertretungsmacht (Vollmacht)</li><li>Handeln in fremdem Namen (ausdrücklich oder aus Umständen erkennbar)</li></ul>Bsp.: Angestellter in einem Laden. <span class="art-ref">Art. 32 ff. OR</span>' },
+  ],
+  arbeitsrecht: [
+    { q: 'Was sind die Merkmale des Arbeitsvertrags?', a: '<strong>Arbeitsvertrag</strong>: Sorgfältiges Tätigwerden, kein bestimmter Erfolg.<br><br>Kernmerkmale:<ul><li><strong>Subordinationsverhältnis</strong>: AN ordnet sich AG unter (persönlich, betrieblich, zeitlich, wirtschaftlich)</li><li><strong>Eingliederung</strong> in Betriebsorganisation</li><li>Indizien: Sozialversicherungsbeiträge, Lohnfortzahlung, fixe Entschädigung</li></ul><span class="art-ref">Art. 319 ff. OR</span>' },
+    { q: 'Welche Hierarchie haben die Rechtsgrundlagen im Arbeitsrecht?', a: 'Von oben nach unten (höheres Recht bricht niedrigeres):<ol><li><strong>Bundesverfassung</strong></li><li><strong>Gesetze</strong> (OR, ArG)</li><li><strong>Gesamtarbeitsvertrag</strong> (GAV)</li><li><strong>Normalarbeitsvertrag</strong> (NAV)</li><li><strong>Einzelarbeitsvertrag</strong></li><li><strong>Weisungen, Reglemente</strong></li></ol>' },
+    { q: 'Was sind die Hauptpflichten des Arbeitnehmers?', a: '<ul><li><strong>Sorgfaltspflicht</strong>: Sorgfältige Arbeit <span class="art-ref">Art. 321e OR</span></li><li><strong>Treuepflicht</strong>: Interessen des AG wahren, Konkurrenzverbot</li><li><strong>Rechenschaftspflicht</strong>: Auskunft über Tätigkeit</li><li><strong>Herausgabepflicht</strong>: Übergebene Gegenstände zurückgeben</li><li><strong>Überstunden leisten</strong> wenn zumutbar</li></ul>' },
+    { q: 'Was sind die Hauptpflichten des Arbeitgebers?', a: '<ul><li><strong>Lohnzahlungspflicht</strong></li><li><strong>Fürsorgepflicht</strong>: Schutz von Gesundheit, Persönlichkeit, Leben</li><li><strong>Gleichbehandlungsgebot</strong></li><li><strong>Zeugnis</strong>: Vollständiges, wahrheitsgetreues Zeugnis auf Verlangen</li><li><strong>Lohnfortzahlung</strong> bei Krankheit/Unfall</li></ul>' },
+    { q: 'Wie lange muss der Arbeitgeber den Lohn bei Krankheit weiterzahlen?', a: '<strong>Im 1. Dienstjahr: mind. 3 Wochen</strong><br><br>Danach nach Berner Skala:<ul><li>2. Jahr: 1 Monat</li><li>3./4. Jahr: 2 Monate</li><li>5.–9. Jahr: 3 Monate</li><li>10.–14. Jahr: 4 Monate</li></ul>Viele AG schliessen eine <strong>Krankentaggeldversicherung</strong> ab (80% Lohn, 720 Tage).' },
+  ],
+  kuendigung: [
+    { q: 'Was sind die gesetzlichen Kündigungsfristen?', a: '<ul><li><strong>Probezeit</strong> (max. 3 Monate): 7 Tage auf jeden Zeitpunkt <span class="art-ref">Art. 335b OR</span></li><li><strong>1. Dienstjahr</strong>: 1 Monat auf Ende Monat</li><li><strong>2.–9. Dienstjahr</strong>: 2 Monate auf Ende Monat</li><li><strong>Ab 10. Dienstjahr</strong>: 3 Monate auf Ende Monat</li></ul>Können verlängert, aber für den AG nicht unter 1 Monat verkürzt werden.' },
+    { q: 'Wann ist eine Kündigung missbräuchlich? (Art. 336 OR)', a: 'Missbräuchlich z.B. wegen:<ul><li>Eigenschaften der Person (Geschlecht, Nationalität, Religion...)</li><li>Verhinderung von Ansprüchen</li><li>Innerbetrieblicher Meinungsäusserung</li><li>Während AN Ansprüche geltend macht</li><li>Militärdienst oder Mutterschaft</li></ul>' },
+    { q: 'Was sind die Folgen einer missbräuchlichen Kündigung? Welche Fristen gelten?', a: '<strong>Kündigung bleibt rechtswirksam</strong> — AN muss trotzdem gehen!<br><br>Aber: AN hat Anspruch auf <strong>Entschädigung bis zu 6 Monatslöhnen</strong>.<br><br>Fristen:<ul><li><strong>Einsprachefrist</strong>: bis Ablauf der Kündigungsfrist</li><li><strong>Klagefrist: 180 Tage</strong> ab Beendigung (Verwirkungsfrist!)</li></ul>' },
+    { q: 'Was sind die Sperrfristen? (Art. 336c OR)', a: '<strong>Nur nach Probezeit, nur bei AG-Kündigung.</strong> Kündigung während Sperrfrist = nichtig.<br><br><ul><li><strong>Militärdienst &gt;11 Tage</strong>: 4 Wochen vor/nach + während Dienst</li><li><strong>Krankheit/Unfall</strong>: 30 Tage (1. J.) / 90 Tage (2.–5. J.) / 180 Tage (ab 6. J.)</li><li><strong>Schwangerschaft</strong>: ganze Dauer + 16 Wochen nach Geburt</li><li><strong>Auslandshilfsdienst</strong>: Dauer der Dienstleistung</li></ul>' },
+    { q: 'Wann ist eine fristlose Kündigung möglich? (Art. 337 OR)', a: '<strong>Aus wichtigen Gründen</strong> jederzeit fristlos, von beiden Seiten.<br><br>Wichtiger Grund: Umstand, bei dem dem Kündigenden nach <strong>Treu und Glauben die Fortsetzung nicht mehr zugemutet werden kann</strong> (Vertrauensverhältnis zerrüttet).<br><br>Auf Verlangen: <strong>schriftliche Begründung</strong>. Richter entscheidet über Gültigkeit.' },
+  ],
+  werkauftrag: [
+    { q: 'Was unterscheidet Werkvertrag, Auftrag und Arbeitsvertrag grundlegend?', a: '<ul><li><strong>Arbeitsvertrag</strong>: Sorgfalt + Subordination (AN ordnet sich unter)</li><li><strong>Werkvertrag</strong>: <em>Erfolg</em> geschuldet (Werk), keine Unterordnung</li><li><strong>Auftrag</strong>: Sorgfältiges Tätigwerden, <em>Erfolg NICHT</em> geschuldet, Vertrauensverhältnis</li></ul>' },
+    { q: 'Was sind die Merkmale des Werkvertrags? (Art. 363 OR)', a: '<strong>Unternehmer verpflichtet sich gegen Vergütung zur Herstellung eines Werkes.</strong><ul><li>Im Zentrum steht das <strong>Werk</strong> (Ergebnis / Erfolg)</li><li>Unternehmer verwendet i.d.R. <strong>eigene Arbeitsmittel</strong></li><li><strong>Einmalige</strong> Leistungserbringung, formfrei</li></ul>Bsp.: Hausbau, Möbelstück nach Mass, Bauplan, Haarschnitt, Autoreparatur.' },
+    { q: 'Wie funktioniert die Preisgestaltung beim Werkvertrag?', a: '<strong>Fixpreis</strong> <span class="art-ref">Art. 373 OR</span>: Vereinbarter Preis gilt unabhängig vom Aufwand. Nur bei ausserordentlichen, unvorhersehbaren Umständen kann der Richter eine Erhöhung bewilligen.<br><br><strong>Ohne Vereinbarung</strong> <span class="art-ref">Art. 374 OR</span>: Werklohn nach Wert der Arbeit und Aufwendungen.' },
+    { q: 'Welche Mängelrechte hat der Besteller beim Werkvertrag?', a: 'Drei Rechte zur Wahl:<ul><li><strong>Wandelung</strong>: Vertragsaufhebung, Rückgabe der Leistungen</li><li><strong>Minderung</strong>: Reduktion des Werklohns</li><li><strong>Nachbesserung</strong>: Reparatur des Mangels</li></ul>+ <strong>Schadenersatz</strong> bei schuldhaftem Handeln des Unternehmers.' },
+    { q: 'Was sind die Merkmale des Auftrags? (Art. 394 OR)', a: '<strong>Beauftragter verpflichtet sich, gewisse Geschäfte oder Dienste im Interesse des Auftraggebers zu tätigen.</strong><ul><li>Sorgfältiges <strong>Tätigwerden</strong> im Vordergrund</li><li><strong>Erfolg NICHT</strong> geschuldet</li><li><strong>Treueverpflichtung</strong> des Beauftragten</li><li>Besonderes <strong>Vertrauensverhältnis</strong>, selbständige Stellung</li></ul>Bsp.: Arzt, Anwalt, Bankberater (Beratung).' },
+  ],
+  it: [
+    { q: 'Was sind IT-Verträge rechtlich? Warum ist die Einordnung wichtig?', a: 'IT-Verträge sind <strong>Innominatverträge</strong> (im Gesetz nicht geregelt) mit Elementen aus Werkvertrag, Auftrag, Kauf, Miete, Hinterlegung.<br><br>Einordnung entscheidend für: <strong>Mängelrechte, Verjährung, Haftungsausschlüsse, Rügeobliegenheit.</strong>' },
+    { q: 'Welcher Vertragstyp gilt für welche IT-Leistung?', a: '<ul><li><strong>Werkvertrag</strong>: App-Entwicklung, Website, Individualsoftware, Installation — Erfolg geschuldet</li><li><strong>Auftrag</strong>: Planung, Beratung, Projektmanagement — Sorgfalt, kein Erfolg</li><li><strong>Kaufrecht analog</strong>: Standardsoftware (z.B. MS Office-Kauf)</li><li><strong>Miet-Elemente</strong>: Cloud-Nutzungsrechte (SaaS)</li></ul>' },
+    { q: 'Was sind IaaS, SaaS und PaaS?', a: '<ul><li><strong>IaaS</strong>: Speicher, Server, Netzwerk — Bsp: AWS, Azure, Google Compute</li><li><strong>SaaS</strong>: Software als Abonnement über Internet — Bsp: Dropbox, MS Office 365</li><li><strong>PaaS</strong>: Plattform + Tools zur App-Entwicklung — Bsp: Azure, SAP Cloud</li></ul>' },
+    { q: 'Was ist ein Software Escrow Agreement?', a: 'Softwareentwickler hinterlegt <strong>Source Code bei einem neutralen Dritten</strong> (Escrow-Agent).<br><br>Agent gibt Code erst bei vordefinierten Ereignissen heraus (z.B. Insolvenz des Entwicklers).<br><br>→ Schützt den Kunden: Software kann weitergenutzt werden, auch wenn der Entwickler ausfällt.' },
+    { q: 'Welche Mängelrechte gelten bei IT-Verträgen?', a: 'Je nach Qualifikation:<ul><li><strong>Kauf-Elemente</strong>: Wandelung, Minderung, Ersatzlieferung <span class="art-ref">Art. 197 ff. OR</span></li><li><strong>Werkvertrag-Elemente</strong>: Wandelung, Minderung, Nachbesserung <span class="art-ref">Art. 363 ff. OR</span></li><li><strong>Auftrags-Elemente</strong>: Schadenersatz <span class="art-ref">Art. 394 ff. OR</span></li></ul>→ Vertragsqualifikation ist entscheidend!' },
+    { q: 'Welche typischen Leistungsstörungen gibt es bei IT-Verträgen?', a: 'Probleme: System funktioniert nicht, Softwarefehler → Datenverlust, Hackerangriffe.<br><br>Konsequenzen:<ul><li>Produktionsausfälle, Einnahmenverlust</li><li>Personenschäden bei sicherheitsrelevanter Software</li><li>Reputationsschäden</li><li>Datenschutzverletzungen</li></ul>' },
+  ],
+  haftpflicht: [
+    { q: 'Was sind die 4 Voraussetzungen der Verschuldenshaftung (Art. 41 OR)?', a: 'Alle 4 müssen kumulativ vorliegen:<ol><li><strong>Schaden</strong>: Unfreiwillige Vermögenseinbusse</li><li><strong>Adäquater Kausalzusammenhang</strong>: Handlung ist nach normalem Lauf geeignet, das Resultat zu bewirken</li><li><strong>Widerrechtlichkeit</strong>: Verletzung von Persönlichkeit/Eigentum ohne Rechtfertigungsgrund</li><li><strong>Verschulden</strong>: Fahrlässigkeit oder Vorsatz</li></ol>' },
+    { q: 'Was ist der Unterschied zwischen Verschuldens-, Kausal- und Gefährdungshaftung?', a: '<ul><li><strong>Verschuldenshaftung</strong> <span class="art-ref">Art. 41 OR</span>: Schaden + Kausalität + Widerrechtlichkeit + Verschulden</li><li><strong>Kausalhaftung</strong>: Verschulden nicht erforderlich oder vermutet. Mild (Entlastung möglich) oder scharf (keine Entlastung)</li><li><strong>Gefährdungshaftung</strong>: Durch Betrieb einer gefährlichen Vorrichtung begründet (Motorfahrzeug, Jagd, Flug, Atom)</li></ul>' },
+    { q: 'Was ist der Unterschied zwischen milder und scharfer Kausalhaftung?', a: '<strong>Milde Kausalhaftung</strong>: Entlastung durch <em>Sorgfaltsbeweis</em> möglich.<br>Bsp.: Geschäftsherrnhaftung (OR 55), Tierhalter, Familienoberhaupt, Produktehaftpflicht<br><br><strong>Scharfe Kausalhaftung</strong>: Nur Beweis mangelnder Kausalität hilft.<br>Bsp.: Werkeigentümerhaftung (Gewässerverunreinigung)' },
+  ],
+  produkthaftung: [
+    { q: 'Was ist der Anwendungsbereich des PrHG?', a: 'Hersteller haftet, wenn ein <strong>fehlerhaftes Produkt</strong> dazu führt:<ul><li><strong>Personenschaden</strong>: Person getötet oder verletzt</li><li><strong>Sachschaden</strong>: Sache zum privaten Gebrauch beschädigt</li></ul><em>Keine Haftung</em> für Schaden am fehlerhaften Produkt selbst! <span class="art-ref">Art. 1 PrHG</span>' },
+    { q: 'Wer gilt als Hersteller nach Art. 2 PrHG?', a: '<ul><li>Hersteller von <strong>Endprodukt, Grundstoff oder Teilprodukt</strong></li><li><strong>Quasi-Hersteller</strong>: wer sich durch Anbringen seines Namens als Hersteller ausgibt</li><li><strong>Importeur</strong>: wer Produkt zum Zweck des Vertriebs einführt</li><li><strong>Lieferant</strong>: subsidiär, wenn Hersteller nicht festgestellt werden kann</li></ul>' },
+    { q: 'Wann ist ein Produkt «fehlerhaft»? (Art. 4 PrHG)', a: 'Fehlerhaft, wenn es <strong>nicht die Sicherheit bietet, die man berechtigterweise erwarten darf.</strong><br><br>Massgebend:<ul><li>Art der Präsentation dem Publikum</li><li>Vernünftigerweise zu erwartender Gebrauch</li><li>Zeitpunkt des Inverkehrbringens</li></ul>Später verbesserte Produkte machen frühere nicht automatisch fehlerhaft.' },
+    { q: 'Welche 5 Voraussetzungen müssen für PrHG-Haftung kumulativ erfüllt sein?', a: '<ol><li>Person ist <strong>Hersteller/Importeur/Händler</strong> nach Art. 2 PrHG</li><li>Es handelt sich um ein <strong>Produkt</strong> nach Art. 3 PrHG</li><li>Das Produkt ist <strong>fehlerhaft</strong> nach Art. 4 PrHG</li><li><strong>Schaden</strong> nach Art. 1 PrHG; Schaden &gt; CHF 900 Selbstbehalt</li><li><strong>Adäquater Kausalzusammenhang</strong> zwischen Fehler und Schaden</li></ol>' },
+    { q: 'Verjährungs- und Verwirkungsfristen PrHG. Kann man Haftung wegbedingen?', a: '<ul><li><strong>Verjährungsfrist: 3 Jahre</strong> ab Kenntnis des Schadens <span class="art-ref">Art. 9 PrHG</span></li><li><strong>Verwirkungsfrist: 10 Jahre</strong> ab Inverkehrbringen <span class="art-ref">Art. 10 PrHG</span></li><li><strong>Kein Haftungsausschluss möglich!</strong> Entsprechende Vereinbarungen sind <em>nichtig</em> <span class="art-ref">Art. 8 PrHG</span></li></ul>' },
+    { q: 'Was entschied das Bundesgericht im Kaffeekanne-Fall (BGE 133 III 81)?', a: 'Eine Kaffeekanne explodierte und verletzte die Klägerin schwer. Vorinstanzen verlangten den Nachweis eines konkreten Fehlers.<br><br><strong>Bundesgericht:</strong> Zu streng! Geschädigte muss nur zeigen, dass das Produkt <em>die berechtigten Sicherheitserwartungen des durchschnittlichen Konsumenten nicht erfüllt</em> — nicht die Fehlerursache. Beweis nach «überwiegender Wahrscheinlichkeit».<br>→ <strong>Erhebliche Erleichterung für Geschädigte.</strong>' },
+  ],
+};
+
+const DAY_PLAN = [
+  { day: 1,  topic: 'ZGB Einleitungsartikel (Art. 1–3 ZGB)',          cards: 5,  type: 'today' },
+  { day: 2,  topic: 'OR AT: Vertragsfreiheit & Entstehung',           cards: 6,  type: '' },
+  { day: 3,  topic: 'OR AT: Formvorschriften & Mängel',               cards: 6,  type: '' },
+  { day: 4,  topic: 'Arbeitsrecht: Grundlagen & Pflichten',           cards: 5,  type: '' },
+  { day: 5,  topic: 'Arbeitsrecht: Lohn & Lohnfortzahlung',           cards: 4,  type: '' },
+  { day: 6,  topic: 'Kündigung: Fristen & Missbräuchlichkeit',        cards: 5,  type: '' },
+  { day: 7,  topic: 'Kündigung: Sperrfristen & fristlose Kündigung',  cards: 4,  type: '' },
+  { day: 8,  topic: 'Werkvertrag & Auftrag: Merkmale & Mängelrechte', cards: 5,  type: '' },
+  { day: 9,  topic: 'IT-Verträge: Erscheinungsformen & Mängelrechte', cards: 6,  type: '' },
+  { day: 10, topic: 'Haftpflichtrecht: Verschuldens- & Kausalhaftung',cards: 3,  type: '' },
+  { day: 11, topic: 'Produktehaftpflicht (PrHG): Voraussetzungen',    cards: 6,  type: '' },
+  { day: 12, topic: 'Gesamtwiederholung — alle Themen',               cards: 15, type: '' },
+  { day: 13, topic: '🎯 Probeprüfungen lesen',                        cards: 0,  type: 'exam' },
+];
+
+let state = {
+  currentTopic: 'zgb',
+  currentIdx: 0,
+  showAnswer: false,
+  scores: {},
+};
+
+try {
+  const s = localStorage.getItem('rvu_scores');
+  if (s) state.scores = JSON.parse(s);
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('rvu_scores', JSON.stringify(state.scores)); } catch(e) {}
+}
+
+function showView(v, btn) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (v === 'plan') renderPlan();
+  if (v === 'fortschritt') renderProgress();
+  if (v === 'lernen') { updateTopbar(); renderCard(); }
+}
+
+function selectTopic(id) {
+  state.currentTopic = id;
+  state.currentIdx = 0;
+  state.showAnswer = false;
+  renderTopicList();
+  updateTopbar();
+  renderCard();
+}
+
+function updateTopbar() {
+  const t = TOPICS.find(x => x.id === state.currentTopic);
+  const cards = CARDS_DATA[state.currentTopic] || [];
+  const learned = cards.filter((_, i) => state.scores[state.currentTopic + '_' + i] === 'gut').length;
+  document.getElementById('topbarTitle').textContent = t ? t.label : '';
+  document.getElementById('topbarSub').textContent = `Tag ${t ? t.day : '?'} · ${learned}/${cards.length} gelernt`;
+}
+
+function renderTopicList() {
+  const list = document.getElementById('topicList');
+  list.innerHTML = TOPICS.map(t => {
+    const cards = CARDS_DATA[t.id] || [];
+    const learned = cards.filter((_, i) => state.scores[t.id + '_' + i] === 'gut').length;
+    return `<button class="topic-item ${state.currentTopic === t.id ? 'active' : ''}" onclick="selectTopic('${t.id}'); showView('lernen', document.querySelector('.nav-item'))">
+      <span class="topic-dot"></span>
+      <span class="topic-name">${t.label}</span>
+      <span class="topic-pill">${learned}/${cards.length}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderCard() {
+  const area = document.getElementById('cardArea');
+  const cards = CARDS_DATA[state.currentTopic] || [];
+  if (!cards.length) { area.innerHTML = ''; return; }
+
+  const idx = state.currentIdx;
+  const card = cards[idx];
+  const key = state.currentTopic + '_' + idx;
+  const score = state.scores[key];
+  const pct = Math.round((idx / cards.length) * 100);
+  const topic = TOPICS.find(t => t.id === state.currentTopic);
+
+  const statusHtml = score === 'gut'
+    ? '<span class="card-status gut">✓ Gewusst</span>'
+    : score === 'nochmal'
+    ? '<span class="card-status nochmal">↺ Wiederholen</span>'
+    : '<span class="card-status" style="color:var(--text-faint)">–</span>';
+
+  const answerHtml = state.showAnswer ? `
+    <hr class="answer-sep">
+    <div class="answer-text">${card.a}</div>` : '';
+
+  const hintHtml = !state.showAnswer
+    ? '<div class="card-hint">Klicken zum Aufdecken</div>' : '';
+
+  const ctaHtml = state.showAnswer ? `
+    <div class="controls" style="margin-top:16px">
+      <button class="btn btn-danger" onclick="rate('nochmal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Nochmal
+      </button>
+      <button class="btn btn-success" onclick="rate('gut')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Gewusst
+      </button>
+    </div>` : `
+    <div class="controls" style="margin-top:16px">
+      <button class="btn" onclick="prevCard()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Zurück
+      </button>
+      <button class="btn btn-primary" onclick="toggleAnswer()">Antwort anzeigen</button>
+    </div>`;
+
+  area.innerHTML = `
+    <div class="card-meta">
+      <span class="card-counter">${idx + 1} / ${cards.length}</span>
+      ${statusHtml}
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="flashcard" onclick="if(!state.showAnswer) toggleAnswer()">
+      <div>
+        <div class="card-badge">${topic ? topic.label : ''}</div>
+        <div class="card-question">${card.q}</div>
+      </div>
+      ${answerHtml}
+      ${hintHtml}
+    </div>
+    ${ctaHtml}
+  `;
+}
+
+function toggleAnswer() {
+  state.showAnswer = true;
+  renderCard();
+}
+
+function rate(val) {
+  state.scores[state.currentTopic + '_' + state.currentIdx] = val;
+  save();
+  nextCard();
+}
+
+function nextCard() {
+  const cards = CARDS_DATA[state.currentTopic] || [];
+  const next = (state.currentIdx + 1) % cards.length;
+  state.currentIdx = next;
+  state.showAnswer = false;
+
+  if (next === 0 && cards.every((_, i) => state.scores[state.currentTopic + '_' + i] === 'gut')) {
+    document.getElementById('cardArea').innerHTML = `
+      <div class="done-state">
+        <div class="done-emoji">🎉</div>
+        <h2>Thema abgeschlossen!</h2>
+        <p>Alle Karten gelernt. Wähle das nächste Thema.</p>
+      </div>`;
+    renderTopicList();
+    updateTopbar();
+    return;
+  }
+  renderCard();
+  renderTopicList();
+  updateTopbar();
+}
+
+function prevCard() {
+  const cards = CARDS_DATA[state.currentTopic] || [];
+  state.currentIdx = (state.currentIdx - 1 + cards.length) % cards.length;
+  state.showAnswer = false;
+  renderCard();
+}
+
+function renderPlan() {
+  document.getElementById('dayPlan').innerHTML = DAY_PLAN.map(d => `
+    <div class="day-row ${d.type}">
+      <div class="day-num">Tag ${String(d.day).padStart(2,'0')}</div>
+      <div class="day-line"></div>
+      <div class="day-topic">${d.topic}</div>
+      ${d.cards > 0 ? `<div class="day-cards-badge">${d.cards} Karten</div>` : ''}
+    </div>`).join('');
+}
+
+function renderProgress() {
+  let totalLearned = 0, totalRepeat = 0, totalAll = 0;
+  let html = '';
+
+  TOPICS.forEach(t => {
+    const cards = CARDS_DATA[t.id] || [];
+    const learned = cards.filter((_, i) => state.scores[t.id + '_' + i] === 'gut').length;
+    const repeat = cards.filter((_, i) => state.scores[t.id + '_' + i] === 'nochmal').length;
+    totalLearned += learned;
+    totalRepeat += repeat;
+    totalAll += cards.length;
+    const pct = cards.length > 0 ? Math.round((learned / cards.length) * 100) : 0;
+    html += `<div class="topic-prog-item">
+      <div class="topic-prog-header">
+        <span class="topic-prog-name">${t.label}</span>
+        <span class="topic-prog-frac">${learned}/${cards.length}</span>
+      </div>
+      <div class="progress-track-thin"><div class="progress-fill-thin" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+
+  document.getElementById('statGelernt').textContent = totalLearned;
+  document.getElementById('statWiederholen').textContent = totalRepeat;
+  document.getElementById('statGesamt').textContent = totalAll;
+  document.getElementById('topicProgress').innerHTML = html;
+}
+
+// Init
+renderTopicList();
+updateTopbar();
+renderCard();
+</script>
+</body>
+</html>
