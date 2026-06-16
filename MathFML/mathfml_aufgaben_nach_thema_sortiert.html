@@ -820,9 +820,11 @@
                 </svg>Musterlösung anzeigen</div>
               <div class="sol-body">
                 <b>(a)</b> \(\nabla e^{|\mathbf{v}|}=e^{|\mathbf{v}|}\cdot\nabla|\mathbf{v}|=\dfrac{e^{|\mathbf{v}|}}{|\mathbf{v}|}\,\mathbf{v}^\top\)<br><br>
-                <b>(b)</b> \(|\mathbf{v}(t)|=\sqrt{e^{2t}+t^4}\), also \(g(t)=e^{\sqrt{e^{2t}+t^4}}\)<br><br>
-                \(\mathbf{v}'(t)=\begin{pmatrix}e^t\\2t\end{pmatrix}\)<br><br>
-                \(\dfrac{dg}{dt}=\nabla f(\mathbf{v}(t))\cdot\mathbf{v}'(t)=\dfrac{e^{\sqrt{e^{2t}+t^4}}}{\sqrt{e^{2t}+t^4}}\,(e^t,\,t^2)\cdot\begin{pmatrix}e^t\\2t\end{pmatrix}=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{2e^{2t}+4t^3}{2\sqrt{e^{2t}+t^4}}\)
+                <b>(b)</b> \(g(t)=e^{\sqrt{v_1^2(t)+v_2^2(t)}}=e^{\sqrt{e^{2t}+t^4}}\)<br><br>
+                Direkt ableiten:<br>
+                \(\dfrac{dg}{dt}=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{1}{2\sqrt{e^{2t}+t^4}}\cdot(2e^{2t}+4t^3)=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{e^{2t}+2t^3}{\sqrt{e^{2t}+t^4}}\)<br><br>
+                Alternativ via Kettenregel \(\bigl(\tfrac{d}{dt}g=\nabla f\cdot\tfrac{d}{dt}\mathbf{v}\bigr)\):<br>
+                \(\dfrac{d}{dt}g=e^{|\mathbf{v}|}\dfrac{\mathbf{v}^\top}{|\mathbf{v}|}\cdot\dfrac{d}{dt}\mathbf{v}=e^{|\mathbf{v}|}\dfrac{1}{|\mathbf{v}|}(v_1,v_2)\cdot\begin{pmatrix}e^t\\2t\end{pmatrix}=e^{\sqrt{e^{2t}+t^4}}\cdot\dfrac{e^{2t}+2t^3}{\sqrt{e^{2t}+t^4}}\)
               </div>
             </div>
           </div>
