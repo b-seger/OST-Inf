@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recht für Ingenieure — Übungsaufgaben &amp; Lösungen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface2: #F0EEE9;
+            --border: #E4E1DA;
+            --border-med: #CBC8C0;
+            --text: #1A1916;
+            --text-muted: #6B6860;
+            --text-faint: #9E9C96;
+            --purple: #534AB7;
+            --purple-light: #EEEDFE;
+            --purple-mid: #AFA9EC;
+            --purple-dark: #3C3489;
+            --green: #1D9E75;
+            --green-light: #E1F5EE;
+            --green-dark: #0F6E56;
+            --red: #C0392B;
+            --red-light: #FDECEA;
+            --red-dark: #922B21;
+            --amber: #D97706;
+            --amber-light: #FEF3C7;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #141412;
+                --surface: #1E1D1A;
+                --surface2: #272522;
+                --border: #2E2C28;
+                --border-med: #3D3B36;
+                --text: #F0EDE8;
+                --text-muted: #9E9B94;
+                --text-faint: #6B6860;
+                --purple-light: #1E1B3A;
+                --purple-mid: #534AB7;
+                --green-light: #0B2820;
+                --red-light: #2A100D;
+                --amber-light: #2A1D05;
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-brand .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--purple);
+        }
+
+        .sidebar-brand h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+
+        .sidebar-stats {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-row strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .progress-track-thin {
+            height: 6px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill-thin {
+            height: 100%;
+            background: var(--purple);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .topic-nav {
+            padding: 12px 12px 24px;
+            flex: 1;
+        }
+
+        .topic-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 2px;
+            transition: background 0.15s ease;
+        }
+
+        .topic-nav-item:hover {
+            background: var(--surface2);
+        }
+
+        .topic-nav-item.active {
+            background: var(--purple-light);
+            color: var(--purple-dark);
+        }
+
+        .topic-nav-item .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .topic-nav-item .count {
+            margin-left: auto;
+            font-size: 0.72rem;
+            color: var(--text-faint);
+            background: var(--surface2);
+            padding: 1px 7px;
+            border-radius: 20px;
+        }
+
+        .topic-nav-item.active .count {
+            background: var(--purple-mid);
+            color: white;
+        }
+
+        /* ── Main content ── */
+        .main {
+            padding: 32px 40px 80px;
+            max-width: 880px;
+        }
+
+        .main-header {
+            margin-bottom: 28px;
+        }
+
+        .main-header .eyebrow {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--purple);
+            margin-bottom: 6px;
+        }
+
+        .main-header h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .main-header p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-top: 6px;
+            max-width: 640px;
+        }
+
+        .task-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .task-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .task-num {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: var(--purple-light);
+            color: var(--purple-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+        }
+
+        .task-body-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .task-sachverhalt {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.65;
+            white-space: pre-line;
+        }
+
+        .task-sachverhalt strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .task-chevron {
+            flex-shrink: 0;
+            color: var(--text-faint);
+            transition: transform 0.2s ease;
+            margin-top: 4px;
+        }
+
+        .task-card.open .task-chevron {
+            transform: rotate(180deg);
+        }
+
+        .task-answer-wrap {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .task-card.open .task-answer-wrap {
+            max-height: 4000px;
+        }
+
+        .task-answer {
+            padding: 0 20px 20px 64px;
+        }
+
+        .answer-box {
+            background: var(--green-light);
+            border: 1px solid var(--green);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            font-size: 0.87rem;
+            line-height: 1.7;
+        }
+
+        .answer-box .answer-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--green-dark);
+            margin-bottom: 10px;
+        }
+
+        .answer-box p {
+            margin-bottom: 9px;
+        }
+
+        .answer-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .answer-box strong {
+            color: var(--text);
+        }
+
+        .answer-box ul {
+            margin: 6px 0 10px 18px;
+        }
+
+        .answer-box li {
+            margin-bottom: 5px;
+        }
+
+        .answer-box .art-ref {
+            display: inline-block;
+            background: var(--surface);
+            border: 1px solid var(--border-med);
+            border-radius: 5px;
+            padding: 1px 7px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--purple-dark);
+        }
+
+        .answer-box .sub-q {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--green);
+        }
+
+        .answer-box .sub-q:first-of-type {
+            margin-top: 12px;
+        }
+
+        .toggle-all-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-med);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .toggle-btn:hover {
+            background: var(--surface2);
+        }
+
+        .module-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 36px 0 16px;
+            color: var(--text-faint);
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .module-divider:first-child {
+            margin-top: 0;
+        }
+
+        .module-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Mobile */
+        @media (max-width: 860px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .topic-nav {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 6px;
+                padding: 12px;
+            }
+
+            .topic-nav-item {
+                white-space: nowrap;
+                margin-bottom: 0;
+            }
+
+            .main {
+                padding: 24px 18px 60px;
+            }
+
+            .task-answer {
+                padding: 0 16px 18px 16px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-med);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="eyebrow">Recht für Ingenieure</div>
+                <h1>Übungsaufgaben &amp; Lösungen</h1>
+            </div>
+            <div class="sidebar-stats">
+                <div class="stat-row"><span>Aufgaben gesamt</span><strong id="statTotal">0</strong></div>
+                <div class="stat-row"><span>Module</span><strong id="statModules">0</strong></div>
+            </div>
+            <nav class="topic-nav" id="topicNav"></nav>
+        </aside>
+
+        <main class="main">
+            <div class="main-header">
+                <div class="eyebrow" id="headerEyebrow">Alle Module</div>
+                <h2 id="headerTitle">Alle Übungsaufgaben</h2>
+                <p id="headerDesc">Sämtliche Übungsaufgaben aus den Vorlesungsfolien — die Lösungen sind anhand der
+                    Vorlesungsinhalte erarbeitet, da im Original keine Musterlösungen vorlagen. Klicke auf eine Aufgabe,
+                    um die Lösung einzublenden.</p>
+            </div>
+            <div class="toggle-all-bar">
+                <button class="toggle-btn" onclick="toggleAll(true)">Alle Lösungen einblenden</button>
+                <button class="toggle-btn" onclick="toggleAll(false)">Alle Lösungen ausblenden</button>
+            </div>
+            <div id="taskContainer"></div>
+        </main>
+    </div>
+
+    <script>
+        const ICON_CHEVRON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+        const ICON_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    </script>
+    <script>
+        const MODULES = [
+            {
+                id: "zgb",
+                label: "ZGB Einleitungsartikel",
+                color: "#534AB7",
+                desc: "Welcher Einleitungsartikel des ZGB (Art. 1–3 ZGB) ist im jeweiligen Sachverhalt relevant?",
+                tasks: [
+                    {
+                        title: "1) Zigaretten auf dem Rastplatz",
+                        sachverhalt: "Roman kauft auf dem Parkplatz einer Raststätte von einer Privatperson drei Stangen Zigaretten zum halben Preis.",
+                        answer: `
+<p><strong>Einschlägig: Art. 3 ZGB (guter Glaube).</strong></p>
+<p>Es stellt sich die Frage, ob Roman gutgläubig Eigentum an gestohlener bzw. nicht ordnungsgemäss in Verkehr gebrachter Ware (typischerweise Schmuggel- oder Diebesware) erwerben kann.</p>
+<p>Nach <span class="art-ref">Art. 3 Abs. 1 ZGB</span> wird der gute Glaube vermutet, wo das Gesetz eine Rechtswirkung an ihn knüpft. Nach <span class="art-ref">Art. 3 Abs. 2 ZGB</span> kann sich aber nicht auf den guten Glauben berufen, wer bei der Aufmerksamkeit, wie sie die Umstände gebieten, nicht gutgläubig sein konnte.</p>
+<p>Die Umstände hier (Verkauf auf einem Parkplatz, durch eine Privatperson, zum halben Preis, ohne Quittung/Verpackung) sind derart verdächtig, dass Roman bei der gebotenen Aufmerksamkeit hätte erkennen müssen, dass mit der Ware etwas nicht stimmt (z.B. Schmuggelware). Sein guter Glaube wird dadurch zerstört — er kann sich nicht auf Art. 3 ZGB berufen.</p>`
+                    },
+                    {
+                        title: "2) Entschädigung nach fristloser Entlassung",
+                        sachverhalt: "Roman wurde zu unrecht fristlos entlassen. Der Richter setzt nun eine Entschädigung zwischen einem und sechs Monatslöhnen fest.",
+                        answer: `
+<p><strong>Einschlägig: Art. 1 ZGB (Lückenfüllung / richterliches Ermessen).</strong></p>
+<p>Wenn das Gesetz selbst dem Richter einen Ermessensspielraum einräumt (hier: eine Bandbreite von einem bis sechs Monatslöhnen gemäss Art. 337c Abs. 3 OR), muss der Richter nach <span class="art-ref">Art. 4 ZGB</span> nach Recht und Billigkeit entscheiden.</p>
+<p>Der eigentliche Bezug zu den Einleitungsartikeln liegt aber in <span class="art-ref">Art. 1 Abs. 2 ZGB</span>: Kann dem Gesetz keine Vorschrift entnommen werden (bzw. lässt das Gesetz dem Richter einen Spielraum), so soll der Richter nach Gewohnheitsrecht und, wo auch dieses fehlt, nach der Regel entscheiden, die er als Gesetzgeber aufstellen würde. Die Festlegung der konkreten Entschädigungshöhe innerhalb der gesetzlichen Bandbreite ist damit ein klassischer Anwendungsfall richterlichen Ermessens im Sinne der Einleitungsartikel.</p>`
+                    },
+                    {
+                        title: "3) Schikanöse Kündigung der Mieterin",
+                        sachverhalt: "Peter kündigt seiner Mieterin formal korrekt, nur um sie zu ärgern, da er gar nicht beabsichtigt, die Wohnung selbst zu nutzen oder weiterzuvermieten.",
+                        answer: `
+<p><strong>Einschlägig: Art. 2 Abs. 2 ZGB (Rechtsmissbrauchsverbot).</strong></p>
+<p>Die Kündigung ist formal korrekt erklärt worden — es liegt also kein Formmangel vor. Problematisch ist aber der Zweck der Ausübung des Kündigungsrechts: Peter übt sein an sich bestehendes Recht aus, jedoch ohne schützenswertes Eigeninteresse, einzig um die Mieterin zu schikanieren.</p>
+<p>Nach <span class="art-ref">Art. 2 Abs. 2 ZGB</span> findet der offenbare Missbrauch eines Rechts keinen Rechtsschutz. Eine Rechtsausübung, die nur dazu dient, eine andere Person zu schädigen oder zu ärgern (sog. Schikaneverbot), ohne dass ein eigenes berechtigtes Interesse dahintersteht, ist rechtsmissbräuchlich.</p>`
+                    },
+                    {
+                        title: "4) Bewusst falsch eingezeichnete Grundstücksgrenze",
+                        sachverhalt: "Herr Müller verkauft seinem Nachbarn ein Stück Land. Im Kaufvertrag wird der Grenzverlauf ungenau eingezeichnet. Müller weiss, dass der Nachbar die Grenze missverstanden hat, schweigt aber bewusst.",
+                        answer: `
+<p><strong>Einschlägig: Art. 2 Abs. 1 ZGB (Grundsatz von Treu und Glauben).</strong></p>
+<p>Jedermann hat nach <span class="art-ref">Art. 2 Abs. 1 ZGB</span> in der Ausübung seiner Rechte und in der Erfüllung seiner Pflichten nach Treu und Glauben zu handeln. Müller weiss um das Missverständnis seines Nachbarn bezüglich des Grenzverlaufs, klärt es aber bewusst nicht auf, um sich einen Vorteil zu verschaffen.</p>
+<p>Dieses bewusste Verschweigen eines offenkundigen Irrtums der Gegenpartei verstösst gegen die im Verkehr erforderliche Redlichkeit und Loyalität, die Art. 2 ZGB von den Vertragsparteien verlangt. Es kann zudem zivilrechtliche Konsequenzen haben (z.B. absichtliche Täuschung nach Art. 28 OR), die Grundlage dafür ist jedoch die Verletzung des Grundsatzes von Treu und Glauben.</p>`
+                    },
+                    {
+                        title: "5) Behauptetes Darlehen unter Freunden",
+                        sachverhalt: "Maria behauptet, sie habe ihrem Freund Jonas 500 Franken geliehen. Jonas bestreitet dies.",
+                        answer: `
+<p><strong>Einschlägig: Art. 8 ZGB (Beweislastregel).</strong></p>
+<p>Nach <span class="art-ref">Art. 8 ZGB</span> hat, wo das Gesetz es nicht anders bestimmt, derjenige das Vorhandensein einer behaupteten Tatsache zu beweisen, der aus ihr Rechte ableitet.</p>
+<p>Maria leitet aus der behaupteten Darlehensgewährung einen Rückzahlungsanspruch ab. Sie muss daher beweisen, dass sie Jonas tatsächlich 500 Franken geliehen hat (z.B. durch Zeugen, Überweisungsbeleg oder schriftliche Vereinbarung). Bleibt der Sachverhalt unbewiesen, geht dies zu Lasten von Maria — sie trägt die sogenannte Beweislast.</p>`
+                    },
+                    {
+                        title: "6) Gestohlene Uhr im Second-Hand-Laden",
+                        sachverhalt: "Tom kauft in einem Second-Hand-Laden eine wertvolle Uhr. Der Preis ist zwar günstig, aber nicht völlig auffällig. Später stellt sich heraus, dass die Uhr gestohlen war.",
+                        answer: `
+<p><strong>Einschlägig: Art. 3 ZGB (guter Glaube).</strong></p>
+<p>Im Gegensatz zum Zigaretten-Beispiel (Aufgabe 1) ist der Preis hier <em>nicht völlig auffällig</em> günstig und der Kauf erfolgt in einem ordentlichen Geschäftsbetrieb (Second-Hand-Laden) und nicht unter verdächtigen Umständen.</p>
+<p>Nach <span class="art-ref">Art. 3 Abs. 1 ZGB</span> wird der gute Glaube vermutet. Tom hatte keinen Anlass, an der Rechtmässigkeit der Herkunft zu zweifeln, da die Umstände des Kaufs (seriöses Geschäft, kein auffällig tiefer Preis) keine besondere Sorgfaltspflicht auslösten. Tom kann sich somit auf seinen guten Glauben berufen — anders als im Fall der Zigaretten, wo die Umstände augenfällig verdächtig waren.</p>
+<p><em>Hinweis:</em> Der gute Glaube schützt Tom allenfalls vor strafrechtlichen Konsequenzen bzw. begründet Schadenersatzansprüche gegen den Verkäufer, verschafft ihm aber bei gestohlenen Sachen nicht automatisch Eigentum (vgl. die besonderen Regeln zum Fahrniserwerb, Art. 934 ZGB) — der zivilrechtliche Gutglaubensschutz ist hier differenziert zu betrachten, der Kernpunkt der Übung bleibt aber die Anwendung von Art. 3 ZGB.</p>`
+                    },
+                    {
+                        title: "7) Laptop-Defekt nach zwei Monaten",
+                        sachverhalt: "Eine Konsumentin kauft einen neuen Laptop. Nach zwei Monaten funktioniert er plötzlich nicht mehr. Die Verkäuferin behauptet: «Der Laptop war bei der Übergabe in Ordnung, Sie müssen ihn unsachgemäss behandelt haben.»",
+                        answer: `
+<p><strong>Einschlägig: Art. 8 ZGB (Beweislastregel).</strong></p>
+<p>Die Konsumentin macht Gewährleistungsrechte wegen eines Mangels geltend und leitet daraus Rechte (z.B. Wandelung, Minderung, Nachbesserung) ab. Grundsätzlich müsste sie nach <span class="art-ref">Art. 8 ZGB</span> beweisen, dass der Mangel bereits bei Übergabe vorhanden war.</p>
+<p>Bei Konsumkäufen gibt es jedoch <span class="art-ref">Art. 8 ZGB</span> ergänzende bzw. abweichende Spezialregelungen (z.B. Vermutung der Mangelhaftigkeit zum Übergabezeitpunkt während einer bestimmten Frist nach Übergabe gemäss revidiertem Kaufrecht). Im Grundsatz zeigt der Fall aber exemplarisch die Funktion von Art. 8 ZGB: Wer sich auf einen Mangel beruft, muss diesen beweisen; wer hingegen behauptet, der Mangel sei nachträglich durch unsachgemässe Behandlung der Käuferin entstanden, müsste diese rechtshindernde bzw. rechtsvernichtende Tatsache (unsachgemässe Behandlung) seinerseits beweisen, sofern er sich darauf beruft, um der Mängelhaftung zu entgehen.</p>`
+                    },
+                    {
+                        title: "8) Nicht gelieferter Esstisch (Holzknappheit)",
+                        sachverhalt: "Ein Schreiner verpflichtet sich vertraglich, für die Kundin Sophie bis zum 1. Mai einen Esstisch zu liefern. Der Tisch wird nicht geliefert. Sophie verlangt Schadenersatz für die Kosten, die ihr durch die Miete eines Ersatzmöbels entstanden sind. Der Schreiner sagt: «Ich konnte den Tisch wegen einer plötzlichen Holzknappheit nicht rechtzeitig fertigstellen, daran bin ich nicht schuld.»",
+                        answer: `
+<p><strong>Einschlägig: Art. 8 ZGB (Beweislastregel) — in Verbindung mit der vertraglichen Verschuldensvermutung nach Art. 97 OR.</strong></p>
+<p>Sophie leitet aus der Nichterfüllung des Werkvertrages (verspätete bzw. ausbleibende Lieferung) einen Schadenersatzanspruch ab. Sie muss daher den Schaden, die Vertragsverletzung sowie den Kausalzusammenhang beweisen.</p>
+<p>Beim <strong>Verschulden</strong> gilt aber eine Umkehr der gewöhnlichen Beweislast: Nach <span class="art-ref">Art. 97 OR</span> wird das Verschulden des Schuldners vermutet. Es ist daher nicht Sophie, die das Verschulden des Schreiners beweisen muss — vielmehr muss sich der Schreiner exkulpieren, also beweisen, dass ihn <em>kein</em> Verschulden trifft, wenn er sich von der Haftung befreien will.</p>
+<p>Eine «plötzliche Holzknappheit» dürfte als allgemeines unternehmerisches Risiko in aller Regel nicht ausreichen, um den Schreiner zu entlasten — er trägt das Beschaffungsrisiko für sein Material grundsätzlich selbst. Gelingt ihm der Entlastungsbeweis nicht, haftet er Sophie für den ihr entstandenen Schaden (Mietkosten für das Ersatzmöbel).</p>`
+                    }
+                ]
+            },
+            {
+                id: "orat",
+                label: "OR Allgemeiner Teil",
+                color: "#1D9E75",
+                desc: "Allgemeines Vertragsrecht: Vertragsschluss, Willensmängel, Verzug, Verjährung.",
+                tasks: [
+                    {
+                        title: "1) Zerbrochene Vase auf der Rolltreppe",
+                        sachverhalt: "Petra gefällt beim Einkaufsbummel in einem grossen Möbelhaus eine grosse, farbige Blumenvase. Da der Wagen schon voll ist, nimmt Petra die Vase unter den Arm und macht sich auf den Weg an die Kasse. Auf der Rolltreppe fällt Petra die Vase zu Boden und zerbricht in 1000 Stücke. Gestützt auf welche Rechtsgrundlage(n) könnte Ikea einen Anspruch geltend machen?",
+                        answer: `
+<p><strong>Kernfrage:</strong> Ist zwischen Petra und Ikea bereits ein Kaufvertrag zustande gekommen, oder befindet sich die Vase noch im Eigentum von Ikea?</p>
+<p>Solange Petra die Vase noch nicht an der Kasse bezahlt bzw. der Kaufvertrag noch nicht durch übereinstimmende Willenserklärungen (<span class="art-ref">Art. 1 OR</span>) zustande gekommen ist, ist die Vase noch Eigentum von Ikea. Petra hat die Sache lediglich an sich genommen, um sie zur Kasse zu bringen — ein Vertragsschluss liegt darin noch nicht.</p>
+<p>Da noch kein Kaufvertrag besteht, kann sich Ikea nicht auf eine <strong>vertragliche</strong> Haftung (Art. 97 ff. OR) stützen. In Frage kommt aber ein Anspruch aus <strong>unerlaubter Handlung</strong> (<span class="art-ref">Art. 41 OR</span>): Petra hat durch ihr unvorsichtiges Verhalten (Tragen der Vase unter dem Arm auf der Rolltreppe statt im Wagen) das Eigentum von Ikea beschädigt. Voraussetzungen wären Schaden, Widerrechtlichkeit (Eigentumsverletzung), Verschulden (zumindest Fahrlässigkeit) und Kausalzusammenhang — diese dürften hier allesamt erfüllt sein.</p>
+<p>Ikea kann demnach gestützt auf <strong>Art. 41 OR</strong> Schadenersatz für die zerstörte Vase verlangen.</p>`
+                    },
+                    {
+                        title: "2) Bestelltes Mobiltelefon nicht abgeholt",
+                        sachverhalt: "Hans interessiert sich in einem Fachgeschäft für ein bestimmtes Mobiltelefon, das aber vor Ort nicht erhältlich ist. Auf Wunsch von Hans bestellt die Verkäuferin das gewünschte Gerät und sagt zu Hans, dass die Lieferfrist ca. 2–3 Tage beträgt und Hans ein Mail erhalte, wenn er es abholen könne. Hans verspricht, dies zu tun. Beim Herumschlendern in der Stadt sieht Hans das gewünschte Telefon beim Konkurrenz-Unternehmen und kauft es sofort. Als er die Nachricht erhält, dass er das Telefon abholen könne, meldet er sich einfach nicht mehr. Wie ist die Rechtslage?",
+                        answer: `
+<p><strong>Kernfrage:</strong> Ist zwischen Hans und dem Fachgeschäft bereits ein gültiger Kaufvertrag zustande gekommen?</p>
+<p>Hans hat das Gerät bestellt, die Verkäuferin hat die Bestellung angenommen und das Telefon extra für ihn beschafft; Hans hat zudem ausdrücklich versprochen, das Gerät abzuholen. Damit liegt eine übereinstimmende gegenseitige Willensäusserung im Sinne von <span class="art-ref">Art. 1 OR</span> vor — ein (formfreier, mündlicher) Kaufvertrag ist gültig zustande gekommen.</p>
+<p>Hans ist somit vertraglich gebunden und schuldet die Abnahme und Bezahlung des bestellten Geräts. Indem er sich nicht mehr meldet und das Gerät nicht abholt, befindet er sich im <strong>Gläubigerverzug</strong> bzw. verletzt seine vertragliche Pflicht zur Abnahme; gleichzeitig bleibt er zur Zahlung des Kaufpreises verpflichtet, solange er nicht ordnungsgemäss vom Vertrag zurücktritt.</p>
+<p>Das Fachgeschäft kann von Hans grundsätzlich <strong>Erfüllung</strong> verlangen (Abnahme und Zahlung des Kaufpreises, <span class="art-ref">Art. 97 ff. OR</span>) oder, sofern es vom Vertrag zurücktreten möchte, Schadenersatz für den entstandenen Schaden (z.B. Wertminderung, falls das Gerät nur noch zu einem tieferen Preis weiterverkauft werden kann) verlangen. Der blosse Umstand, dass Hans das Gerät anderswo gekauft hat, befreit ihn nicht von seiner vertraglichen Verpflichtung gegenüber dem ursprünglichen Fachgeschäft.</p>`
+                    },
+                    {
+                        title: "3) Reparaturofferte mit detaillierter Kostenaufstellung",
+                        sachverhalt: "X bringt sein Auto in die Garage Z zur Reparatur. Z offeriert X die Reparatur zu einem Preis von CHF 1725.80. Gemäss der detaillierten Aufstellung auf der Offerte setzt sich die Reparatur zusammen aus der Arbeit (10h à CHF 130.–) sowie dem Ersatzmaterial für CHF 525.80. X findet das Angebot gut und nimmt es an. Wie viel schuldet X nach der Reparatur dem Z?",
+                        answer: `
+<p><strong>Kernfrage:</strong> Wurde ein Pauschalpreis oder eine nach Aufwand (Regie) berechnete Vergütung vereinbart?</p>
+<p>Z hat X eine detaillierte Aufstellung unterbreitet, die konkrete Posten (10 Stunden à CHF 130.– sowie Material für CHF 525.80) ausweist und insgesamt auf CHF 1725.80 zu stehen kommt. X hat <strong>dieses Angebot als Ganzes</strong> angenommen.</p>
+<p>Damit haben die Parteien einen <strong>Festpreis (Pauschalpreis)</strong> von CHF 1725.80 vereinbart — die Aufschlüsselung in Arbeit und Material diente lediglich der Nachvollziehbarkeit/Transparenz der Offerte, ändert aber nichts daran, dass mit der Annahme des Angebots der Gesamtpreis verbindlich feststeht (vgl. den Grundgedanken von <span class="art-ref">Art. 1 f. OR</span> zum Konsens über die wesentlichen Vertragspunkte, hier insbesondere den Preis).</p>
+<p>X schuldet Z nach Abschluss der Reparatur somit genau <strong>CHF 1725.80</strong> — unabhängig davon, ob die tatsächlich aufgewendete Zeit oder das tatsächlich verwendete Material geringfügig abweicht. Nur bei einer ausdrücklichen Vereinbarung «nach Aufwand» (reiner Regiepreis ohne verbindliche Pauschale) könnte sich der Endpreis nach dem tatsächlichen Aufwand richten.</p>`
+                    },
+                    {
+                        title: "4) Kakteensammlung unter Druck verkauft",
+                        sachverhalt: "Franz hat sich gegenüber verschiedenen Gläubigern massiv verschuldet, es drohen Betreibungen, wenn er nicht demnächst die Ausstände von CHF 20'000.– begleichen kann. Franz kann sich aus beruflichen Gründen keine Betreibungen leisten. Ein Bekannter namens Bert hat Kenntnis dieser Umstände. Bert bietet Franz an, einen Teil seiner umfangreichen, exotischen Kakteensammlung für CHF 22'000.– abzukaufen. Bei sorgfältiger Planung würde man auf dem Markt mindestens den zwei- bis dreifachen Preis erzielen. Franz nimmt das Angebot widerwillig an. Wenig später kommt Franz zu Geld. Bert drängt auf Aushändigung der Pflanzensammlung. Kann Franz etwas tun?",
+                        answer: `
+<p><strong>Einschlägig: Art. 21 OR (Übervorteilung / Wucher).</strong></p>
+<p>Die Voraussetzungen einer Übervorteilung nach <span class="art-ref">Art. 21 OR</span> sind kumulativ zu prüfen:</p>
+<ul>
+<li><strong>Offenbares Missverhältnis von Leistung und Gegenleistung:</strong> Die Sammlung ist auf dem Markt mindestens das Zwei- bis Dreifache wert — ein offenbares Missverhältnis liegt vor.</li>
+<li><strong>Zwangslage, Unerfahrenheit oder Leichtsinn:</strong> Franz befand sich aufgrund der drohenden Betreibungen und seiner beruflichen Situation in einer wirtschaftlichen Zwangslage.</li>
+<li><strong>Ausbeutung dieser Schwäche:</strong> Bert kannte die Notlage von Franz und nutzte sie bewusst aus, um sich einen übermässigen Vorteil zu verschaffen.</li>
+</ul>
+<p>Da alle Voraussetzungen erfüllt scheinen, ist der Vertrag <strong>einseitig unverbindlich</strong> (anfechtbar) für Franz. Nach <span class="art-ref">Art. 21 Abs. 1 OR</span> kann Franz innerhalb eines Jahres seit Vertragsabschluss erklären, dass er den Vertrag nicht halte, und das bereits Geleistete zurückverlangen.</p>
+<p><strong>Wichtig:</strong> Die einjährige Frist beginnt mit dem <em>Vertragsabschluss</em> zu laufen — nicht erst mit dem Wegfall der Zwangslage. Franz muss also innerhalb dieses Jahres aktiv werden, sofern er den Vertrag noch anfechten will. Tut er dies rechtzeitig, kann er die Übergabe der Kakteensammlung verweigern bzw. die Rückabwicklung verlangen.</p>`
+                    },
+                    {
+                        title: "5) Manipulierter Kilometerstand beim Occasionswagen",
+                        sachverhalt: "Hans kaufte am 5.7.2023 von seinem Kollegen Willy einen Occasions-Sportwagen. Willy hatte das Auto kurz zuvor von Thomas abgekauft. Thomas hat den Kilometerstand manipuliert, wovon Hans und Willy nichts wussten. Der manipulierte Kilometerstand wurde am 7.1.2024 entdeckt und Hans gleichentags mitgeteilt. Wie ist die Rechtslage? Variante 1: Wie wäre der Fall zu beurteilen, wenn Willy den Kilometerstand selbst manipuliert hätte? Variante 2: Hans schiebt das Problem bis Herbst 2024 auf die lange Bank — was könnte das Problem sein?",
+                        answer: `
+<p><strong>Grundfall:</strong> Es handelt sich um einen klassischen Fall der <strong>Mängelgewährleistung beim Kauf</strong> (<span class="art-ref">Art. 197 ff. OR</span>). Der manipulierte Kilometerstand stellt eine zugesicherte (bzw. vorausgesetzte) Eigenschaft dar, die tatsächlich nicht zutrifft — ein Sachmangel. Nach Art. 197 Abs. 2 OR haftet der Verkäufer (Willy) auch dann, wenn er die Mängel selbst nicht gekannt hat. Hans muss den Mangel rechtzeitig rügen (<span class="art-ref">Art. 201 OR</span>): Er hat dies gleichentags getan (7.1.2024), als der Mangel entdeckt wurde — die Rüge ist rechtzeitig erfolgt. Hans kann gegenüber Willy die kaufrechtlichen Gewährleistungsrechte (Wandelung, Minderung) geltend machen, auch wenn Willy selbst gutgläubig war.</p>
+<div class="sub-q"><p><strong>Variante 1 (Willy hat selbst manipuliert):</strong> Hätte Willy den Kilometerstand selbst manipuliert, läge zusätzlich eine <strong>absichtliche Täuschung</strong> (<span class="art-ref">Art. 28 OR</span>) vor. In diesem Fall verlängert sich insbesondere die Rügefrist erheblich bzw. entfällt die strenge Rügepflicht weitgehend, da sich der täuschende Verkäufer nicht auf eine verspätete Mängelrüge berufen darf (<span class="art-ref">Art. 203 OR</span>: bei Arglist haftet der Verkäufer ungeachtet einer unterlassenen oder verspäteten Anzeige). Zudem könnte Hans den Vertrag wegen Willensmangel (Täuschung) anfechten.</p></div>
+<div class="sub-q"><p><strong>Variante 2 (Hans zögert bis Herbst 2024):</strong> Das Problem liegt in der <strong>Verjährung</strong> der kaufrechtlichen Gewährleistungsansprüche. Diese verjähren nach <span class="art-ref">Art. 210 OR</span> grundsätzlich zwei Jahre nach Ablieferung der Sache (bei Fahrnis) bzw. es gilt zu prüfen, ob die Frist seit Übergabe oder allenfalls (bei Arglist) seit Entdeckung läuft. Auch wenn die Rüge selbst rechtzeitig erfolgt ist, muss Hans seine Ansprüche innerhalb der Verjährungsfrist auch <em>gerichtlich durchsetzen bzw. die Verjährung unterbrechen</em> (z.B. durch Klage, Betreibung oder Anerkennung durch den Schuldner, <span class="art-ref">Art. 135 ff. OR</span>), sonst kann Willy nach Fristablauf die Verjährungseinrede erheben und die Leistung verweigern. Das blosse «Aufschieben auf die lange Bank» birgt also das Risiko, dass der Anspruch verjährt, bevor Hans ihn durchsetzt.</p></div>`
+                    },
+                    {
+                        title: "6) Halskette als missglücktes Geschenk",
+                        sachverhalt: "Peter kauft beim Juwelier eine Halskette als Geburtstagsgeschenk für seine Frau. Leider gefällt seiner Frau die Halskette überhaupt nicht und er möchte sie dem Juwelier zurückgeben. Ist das möglich?",
+                        answer: `
+<p><strong>Kernfrage:</strong> Besteht ein gesetzliches Rückgaberecht bei Nichtgefallen?</p>
+<p>Im schweizerischen Kaufrecht gibt es <strong>kein gesetzliches Rücktrittsrecht</strong> bei blossem Nichtgefallen der gekauften Sache. Der Kaufvertrag ist mit der übereinstimmenden Willenserklärung (<span class="art-ref">Art. 1 OR</span>) gültig zustande gekommen; die Halskette weist keinen Mangel auf (sie entspricht der vereinbarten Beschaffenheit) — es liegt also kein Gewährleistungsfall nach <span class="art-ref">Art. 197 ff. OR</span> vor.</p>
+<p>Ein Umtausch- oder Rückgaberecht besteht daher <strong>nur, wenn der Juwelier dies freiwillig (kulanzhalber) oder vertraglich zugesichert hat</strong> (z.B. durch eine Umtauschgarantie, Kulanzregelung oder AGB). Ohne eine solche vertragliche Abrede ist Peter rechtlich nicht berechtigt, die Halskette zurückzugeben — der Juwelier kann die Rücknahme verweigern.</p>`
+                    },
+                    {
+                        title: "7) Vertauschte Preisschilder im Uhrengeschäft",
+                        sachverhalt: "Die Inhaberin eines Uhrengeschäfts verwechselt in der Auslage bei zwei Uhren die Preisschilder. Sie versieht die Rolex mit dem Preisschild der Swatch für CHF 129.– und bei der günstigen Swatch wurde der Preis der Rolex von CHF 9'890.– angebracht. Was kann sie tun, wenn ein Käufer die Rolex für CHF 129.– kaufen möchte?",
+                        answer: `
+<p><strong>Einschlägig: Art. 24 Abs. 1 Ziff. 3 OR (Erklärungsirrtum) — Anfechtung wegen Willensmangel.</strong></p>
+<p>Zunächst stellt sich die Frage, ob durch das Auspreisen überhaupt schon ein bindendes Angebot vorliegt oder nur eine Aufforderung zur Offertstellung (invitatio ad offerendum). Die Auslage mit Preisschild wird in der Praxis regelmässig als verbindliches Angebot zum ausgezeichneten Preis behandelt.</p>
+<p>Geht man davon aus, dass durch die Annahme des Käufers grundsätzlich ein Vertrag zustande gekommen wäre, kann sich die Inhaberin auf einen <strong>Irrtum</strong> berufen: Sie wollte die Rolex nicht zum Preis von CHF 129.– verkaufen — ihre Erklärung (das angebrachte Preisschild) stimmt nicht mit ihrem tatsächlichen Willen überein. Es handelt sich um einen <strong>Erklärungsirrtum</strong> nach <span class="art-ref">Art. 24 Abs. 1 Ziff. 3 OR</span> (Versehen beim Ausdruck des Willens), und zwar über einen für die Geschäftsgrundlage <em>wesentlichen</em> Punkt (den Preis).</p>
+<p>Die Inhaberin kann den (allenfalls bereits zustande gekommenen) Vertrag daher gemäss <span class="art-ref">Art. 23 OR</span> wegen wesentlichen Irrtums <strong>anfechten</strong> und ist nicht verpflichtet, die Rolex zum offensichtlich irrtümlichen Preis abzugeben. Sie muss die Anfechtung jedoch unverzüglich nach Entdeckung des Irrtums erklären (<span class="art-ref">Art. 31 OR</span>), sonst gilt der Vertrag als genehmigt. Praktisch besser: Sie weist den Käufer noch vor Vertragsschluss auf die Verwechslung hin und korrigiert den Preis, womit sich die Irrtumsanfechtung erübrigt.</p>`
+                    }
+                ]
+            },
+            {
+                id: "arbeit",
+                label: "Arbeitsrecht",
+                color: "#D97706",
+                desc: "Fragen und Fälle (1)–(3) aus der Vorlesung Arbeitsrecht: Kündigung, Lohnfortzahlung, Pflichten.",
+                tasks: [
+                    {
+                        title: "1) Beendigung des unbefristeten Arbeitsvertrags",
+                        sachverhalt: "Wie kann ein unbefristeter Arbeitsvertrag beendet werden?",
+                        answer: `
+<p>Ein unbefristeter Arbeitsvertrag kann auf folgende Arten beendet werden:</p>
+<ul>
+<li><strong>Ordentliche Kündigung</strong> unter Einhaltung der Kündigungsfristen nach <span class="art-ref">Art. 335b/335c OR</span> (Probezeit: 7 Tage; danach gestaffelt nach Dienstjahren: 1./2.–9./ab 10. Dienstjahr → 1/2/3 Monate).</li>
+<li><strong>Fristlose Kündigung</strong> aus wichtigem Grund (<span class="art-ref">Art. 337 OR</span>), wenn die Fortsetzung des Arbeitsverhältnisses nach Treu und Glauben nicht mehr zumutbar ist.</li>
+<li><strong>Aufhebungsvertrag</strong>: Beide Parteien einigen sich einvernehmlich auf eine sofortige oder vorzeitige Beendigung.</li>
+<li><strong>Tod des Arbeitnehmers</strong> (das Arbeitsverhältnis erlischt von Gesetzes wegen).</li>
+<li>In Spezialfällen: Pensionierung, sofern vertraglich als Beendigungsgrund vorgesehen.</li>
+</ul>
+<p>Zu beachten sind ferner die zeitlichen <strong>Kündigungsschutzbestimmungen</strong> (Sperrfristen, z.B. bei Krankheit, Unfall, Schwangerschaft, Militärdienst, <span class="art-ref">Art. 336c OR</span>) sowie das Verbot der missbräuchlichen Kündigung (<span class="art-ref">Art. 336 OR</span>).</p>`
+                    },
+                    {
+                        title: "2) Überstunden des leitenden Angestellten",
+                        sachverhalt: "Ein leitender Angestellter der Firma Protec AG hat aufgrund des Ausfalls eines Mitarbeiters in seinem Team erheblich mehr Arbeit. Die Mehrarbeit kann gut auf die Teammitglieder verteilt werden, doch auch der Chef selbst muss mehr arbeiten. Kann er für die geleistete Mehrarbeit Überstundenentschädigung geltend machen, auch wenn er dazu keine Regelung in seinem Arbeitsvertrag vorfindet?",
+                        answer: `
+<p><strong>Grundsatz:</strong> Überstunden sind nach <span class="art-ref">Art. 321c OR</span> grundsätzlich zu entschädigen (Zuschlag von 25% oder Kompensation durch Freizeit), sofern keine andere Regelung getroffen wurde.</p>
+<p>Bei <strong>leitenden Angestellten</strong> gilt jedoch eine wichtige Einschränkung: Nach gefestigter Rechtsprechung und Lehre haben leitende Angestellte (insbesondere Geschäftsführer, Mitglieder der Geschäftsleitung oder Personen mit ähnlich weitgehenden Kompetenzen und entsprechend hoher Entlöhnung) <strong>in der Regel keinen Anspruch auf Überstundenentschädigung</strong>. Begründet wird dies damit, dass solche Personen aufgrund ihrer Stellung, ihres Lohnniveaus und ihrer Eigenverantwortung für die Arbeitszeitgestaltung ein gewisses Mass an Mehrarbeit als Teil ihrer Funktion hinzunehmen haben.</p>
+<p>Da im vorliegenden Fall ein <strong>leitender Angestellter</strong> betroffen ist, kann er für die von ihm persönlich geleistete Mehrarbeit grundsätzlich <strong>keine</strong> Überstundenentschädigung verlangen — unabhängig davon, dass im Arbeitsvertrag dazu nichts geregelt ist. Anders sieht es für die übrigen (nicht leitenden) Teammitglieder aus: Diese haben für ihre geleistete Mehrarbeit grundsätzlich Anspruch auf Entschädigung nach Art. 321c OR.</p>`
+                    },
+                    {
+                        title: "3) Arbeitnehmer- und Arbeitgeberpflichten",
+                        sachverhalt: "Welche Arbeitnehmer- und Arbeitgeberpflichten ergeben sich aus dem OR?",
+                        answer: `
+<p><strong>Pflichten des Arbeitnehmers:</strong></p>
+<ul>
+<li>Persönliche Arbeitsleistung erbringen (<span class="art-ref">Art. 319/321 OR</span>)</li>
+<li>Sorgfalts- und Treuepflicht (<span class="art-ref">Art. 321a OR</span>): sorgfältige Ausführung der Arbeit, Wahrung der berechtigten Interessen des Arbeitgebers</li>
+<li>Befolgung von Weisungen und Anordnungen des Arbeitgebers (im Rahmen des Zumutbaren)</li>
+<li>Geheimhaltungspflicht bezüglich Geschäfts- und Fabrikationsgeheimnissen, auch nach Beendigung des Arbeitsverhältnisses, soweit es der Schutz berechtigter Interessen erfordert (<span class="art-ref">Art. 321a Abs. 4 OR</span>)</li>
+<li>Unterlassen von Konkurrenzierung während des Arbeitsverhältnisses</li>
+<li>Herausgabepflicht von Arbeitsergebnissen (<span class="art-ref">Art. 321b OR</span>)</li>
+</ul>
+<p><strong>Pflichten des Arbeitgebers:</strong></p>
+<ul>
+<li>Lohnzahlungspflicht (<span class="art-ref">Art. 322 ff. OR</span>), inkl. Lohn bei Verhinderung (Art. 324/324a OR)</li>
+<li>Schutz der Persönlichkeit, Gesundheit und Sittlichkeit des Arbeitnehmers (<span class="art-ref">Art. 328 OR</span>)</li>
+<li>Gewährung von Freizeit und Ferien (<span class="art-ref">Art. 329 ff. OR</span>)</li>
+<li>Ausstellung eines Arbeitszeugnisses auf Verlangen (<span class="art-ref">Art. 330a OR</span>)</li>
+<li>Sorgfältiger Umgang mit Personendaten des Arbeitnehmers (<span class="art-ref">Art. 328b OR</span>)</li>
+<li>Bereitstellung der notwendigen Arbeitsmittel und -geräte, sofern nichts anderes vereinbart ist</li>
+</ul>`
+                    },
+                    {
+                        title: "4) Gekürzter Ferienanspruch nach Burnout-Klinikaufenthalt",
+                        sachverhalt: "Peter Meier arbeitet seit 25 Jahren als Finanzexperte. Aufgrund eines Burnouts muss er sich für 2 Monate in eine Klinik begeben. Sein Vorgesetzter teilt ihm mit, dass sein Ferienanspruch um einen Sechstel gekürzt wird. Ist das zulässig? Peter droht, sich an den Kassensturz zu wenden — was bedeutet die Geheimnispflicht im Arbeitsrecht?",
+                        answer: `
+<p><strong>Frage 1 – Kürzung des Ferienanspruchs:</strong> Nach <span class="art-ref">Art. 329b Abs. 1 OR</span> kann der Arbeitgeber den Ferienanspruch kürzen, wenn der Arbeitnehmer in einem Dienstjahr durch eigenes Verschulden insgesamt mehr als einen Monat an der Arbeitsleistung verhindert ist; ohne eigenes Verschulden besteht eine Kürzungsmöglichkeit erst, wenn die Verhinderung insgesamt mehr als zwei Monate dauert, wobei der erste Monat stets anrechnungsfrei bleibt.</p>
+<p>Ein Burnout gilt rechtsprechungsgemäss in der Regel als <strong>unverschuldete</strong> krankheitsbedingte Verhinderung (vergleichbar mit anderen psychischen oder physischen Erkrankungen). Bei einer Abwesenheit von 2 Monaten (= 2 vollen Monaten) liegt die Verhinderung noch <strong>nicht über der kürzungsrelevanten Schwelle</strong> von «mehr als zwei vollen Monaten» bzw. es würde erst der über zwei Monate hinausgehende Teil zur Kürzung berechtigen. Eine Kürzung um einen Sechstel (entspricht 2 Monaten bei einem Jahr Referenzperiode) wäre demnach bei lediglich 2 Monaten unverschuldeter Verhinderung <strong>grundsätzlich nicht zulässig</strong> bzw. zumindest in dieser Höhe nicht gerechtfertigt, da die ersten beiden Monate noch keine Kürzung rechtfertigen.</p>
+<p><strong>Frage 2 – Geheimnispflicht:</strong> Die Geheimnispflicht (<span class="art-ref">Art. 321a Abs. 4 OR</span>) verpflichtet den Arbeitnehmer, Geschäfts- und Fabrikationsgeheimnisse seines Arbeitgebers, von denen er im Rahmen des Arbeitsverhältnisses Kenntnis erhält, sowohl während als auch nach Beendigung des Arbeitsverhältnisses (soweit zur Wahrung der berechtigten Interessen des Arbeitgebers erforderlich) zu wahren. Zusätzlich kann eine strafrechtliche Geheimnispflicht greifen (z.B. Verrat von Fabrikations- oder Geschäftsgeheimnissen nach Art. 162 StGB). Würde Peter sich mit internen Informationen an die Öffentlichkeit (Kassensturz) wenden, könnte dies sowohl eine schwere arbeitsvertragliche Pflichtverletzung als auch eine strafbare Handlung darstellen — je nachdem, um welche Informationen es sich handelt und ob ein überwiegendes öffentliches Interesse (z.B. Whistleblowing bei Missständen) eine Rechtfertigung darstellen könnte.</p>`
+                    },
+                    {
+                        title: "5) Folgen der gerechtfertigten fristlosen Kündigung",
+                        sachverhalt: "Was hat eine gerechtfertigte fristlose Kündigung für Konsequenzen?",
+                        answer: `
+<p>Ist die fristlose Kündigung gerechtfertigt (d.h. liegt tatsächlich ein wichtiger Grund im Sinne von <span class="art-ref">Art. 337 OR</span> vor), endet das Arbeitsverhältnis <strong>sofort</strong>, ohne Einhaltung einer Kündigungsfrist.</p>
+<p>Konsequenzen:</p>
+<ul>
+<li>Der Lohnanspruch endet im Zeitpunkt der fristlosen Kündigung; es besteht kein Anspruch auf Lohn bis zum Ende einer (fiktiven) ordentlichen Kündigungsfrist.</li>
+<li>Die kündigende Partei schuldet der anderen Partei <strong>keinen Schadenersatz</strong>, da die Auflösung gerechtfertigt war.</li>
+<li>Hat der Arbeitnehmer die fristlose Kündigung durch eigenes schuldhaftes Verhalten verursacht (z.B. grobe Pflichtverletzung), kann der Arbeitgeber unter Umständen sogar Schadenersatz vom Arbeitnehmer verlangen, wenn ihm durch dessen Verhalten ein Schaden entstanden ist (<span class="art-ref">Art. 337b OR</span>).</li>
+<li>Anspruch auf ein Arbeitszeugnis bleibt unberührt.</li>
+<li>Bereits erworbene Ansprüche (z.B. anteiliger 13. Monatslohn, nicht bezogene Ferien) sind weiterhin abzugelten.</li>
+</ul>`
+                    },
+                    {
+                        title: "6) Kürzung der Lohnfortzahlung bei Krankheit",
+                        sachverhalt: "Maria Meister ist die neue HR-Chefin in der Firma Z. AG. Sie entscheidet zusammen mit dem CEO, dass den Mitarbeitern neuerdings bei Krankheit nicht mehr Lohn während 4 Monaten ausbezahlt werden soll, sondern nur noch das gesetzlich zulässige Minimum. Wie können die Arbeitsverträge geändert werden?",
+                        answer: `
+<p><strong>Ausgangslage:</strong> Die bisherige Lohnfortzahlung von 4 Monaten bei Krankheit ist eine vertragliche Vereinbarung (vermutlich günstiger als das gesetzliche Minimum nach Berner/Basler/Zürcher Skala gemäss <span class="art-ref">Art. 324a OR</span>). Eine einseitige Änderung von bestehenden Arbeitsverträgen zu Lasten der Arbeitnehmer ist <strong>nicht ohne Weiteres</strong> möglich.</p>
+<p>Mögliche Wege:</p>
+<ul>
+<li><strong>Einvernehmliche Vertragsänderung:</strong> Die Firma kann den betroffenen Arbeitnehmern eine Änderungsvereinbarung anbieten. Diese ist aber nur gültig, wenn die Arbeitnehmer ihr <strong>zustimmen</strong> — ohne Zustimmung bleibt die bisherige (günstigere) vertragliche Regelung in Kraft.</li>
+<li><strong>Änderungskündigung:</strong> Lehnt ein Arbeitnehmer die Vertragsänderung ab, kann der Arbeitgeber das bestehende Arbeitsverhältnis ordentlich kündigen und gleichzeitig den Abschluss eines neuen Arbeitsvertrags mit den geänderten (schlechteren) Bedingungen anbieten. Dabei ist aber Vorsicht geboten: Eine solche Änderungskündigung kann unter Umständen als <strong>missbräuchlich</strong> gemäss <span class="art-ref">Art. 336 OR</span> qualifiziert werden, wenn sie einzig dem Zweck dient, zwingende oder für den Arbeitnehmer günstige Vertragsbestandteile zu unterlaufen, oder wenn sie nicht sachlich gerechtfertigt ist.</li>
+<li><strong>Nur für neue Arbeitsverträge:</strong> Für künftig neu eingestellte Mitarbeiter kann die Firma ohne Weiteres die kürzere (aber gesetzlich zulässige) Lohnfortzahlungsdauer vereinbaren, da insoweit Vertragsfreiheit besteht (im Rahmen des gesetzlichen Minimums nach Art. 324a OR).</li>
+</ul>
+<p>Wichtig: Das <strong>gesetzliche Minimum</strong> nach Art. 324a OR darf in keinem Fall unterschritten werden — dieses ist relativ zwingend (<span class="art-ref">Art. 362 OR</span>) und kann nur zugunsten, nicht zulasten des Arbeitnehmers abgeändert werden, ausser durch eine gleichwertige Lösung (z.B. Krankentaggeldversicherung mit mindestens 80% Lohnersatz während mindestens 720 Tagen).</p>`
+                    },
+                    {
+                        title: "7) Fristlose Kündigung wegen Verdachts — Klara Kleiner",
+                        sachverhalt: "Klara Kleiner arbeitet im Jobsharing zu 50% auf einem Treuhandbüro. Dem Inhaber fallen fehlerhafte Buchungen auf, Gelder wurden auf ein Privatkonto überwiesen. Der Inhaber verdächtigt Klara und kündigt ihr fristlos. Kurze Zeit später stellt sich heraus, dass die Buchungen von der Arbeitskollegin vorgenommen wurden. Wie kann Klara Kleiner gegen die fristlose Kündigung vorgehen?",
+                        answer: `
+<p><strong>Beurteilung der fristlosen Kündigung:</strong> Eine fristlose Kündigung ist nur gerechtfertigt, wenn ein <strong>wichtiger Grund</strong> im Sinne von <span class="art-ref">Art. 337 Abs. 2 OR</span> tatsächlich vorliegt — also ein Umstand, bei dessen Vorhandensein dem Kündigenden nach Treu und Glauben die Fortsetzung des Arbeitsverhältnisses nicht mehr zugemutet werden kann. Da sich herausstellt, dass <strong>nicht Klara, sondern ihre Kollegin</strong> für die fehlerhaften Buchungen verantwortlich war, fehlte der wichtige Grund für die Kündigung gegenüber Klara von Anfang an. Die fristlose Kündigung war demnach <strong>ungerechtfertigt</strong>.</p>
+<p><strong>Rechtliche Konsequenzen / Vorgehen von Klara:</strong></p>
+<ul>
+<li>Eine ungerechtfertigte fristlose Kündigung beendet das Arbeitsverhältnis trotzdem sofort — sie ist <strong>wirksam</strong>, aber rechtswidrig (<span class="art-ref">Art. 337c Abs. 1 OR</span>: kein automatisches Recht auf Weiterbeschäftigung).</li>
+<li>Klara hat Anspruch auf das, was sie verdient hätte, wenn das Arbeitsverhältnis unter Einhaltung der ordentlichen Kündigungsfrist (bzw. bis zum Ablauf eines befristeten Vertrags) beendet worden wäre, abzüglich dessen, was sie durch die vorzeitige Auflösung erspart bzw. anderweitig verdient hat oder hätte verdienen können (<span class="art-ref">Art. 337c Abs. 1 und 2 OR</span>).</li>
+<li>Zusätzlich kann ihr das Gericht eine <strong>Entschädigung</strong> von bis zu 6 Monatslöhnen zusprechen (<span class="art-ref">Art. 337c Abs. 3 OR</span>), da die Kündigung auf einem unzutreffenden, nicht erhärteten Verdacht beruhte.</li>
+<li>Klara sollte ihre Ansprüche innert der Verwirkungs- bzw. Verjährungsfrist gerichtlich (ggf. nach Schlichtungsversuch) durchsetzen.</li>
+</ul>`
+                    },
+                    {
+                        title: "8) Wichtige Gründe und missbräuchliche Kündigung",
+                        sachverhalt: "a) Was sind wichtige Gründe für eine fristlose Kündigung? b) Was sind Beispiele einer missbräuchlichen Kündigung?",
+                        answer: `
+<div class="sub-q"><p><strong>a) Wichtige Gründe für eine fristlose Kündigung (Art. 337 OR):</strong></p>
+<p>Als wichtiger Grund gilt jeder Umstand, bei dessen Vorhandensein dem Kündigenden nach Treu und Glauben die Fortsetzung des Arbeitsverhältnisses nicht mehr zugemutet werden darf — typischerweise eine schwere Zerrüttung des Vertrauensverhältnisses. Beispiele: grobe Verletzung der Treuepflicht (z.B. Diebstahl, Veruntreuung, Konkurrenzierung des Arbeitgebers), beharrliche Arbeitsverweigerung trotz Verwarnung, schwere Tätlichkeiten oder Beschimpfungen am Arbeitsplatz, falsche Deklaration der Arbeitszeit, schwerer Vertrauensbruch. <strong>Nicht</strong> als wichtiger Grund gilt nach <span class="art-ref">Art. 337 Abs. 3 OR</span> die unverschuldete Verhinderung des Arbeitnehmers an der Arbeitsleistung (z.B. Krankheit).</p></div>
+<div class="sub-q"><p><strong>b) Beispiele missbräuchlicher Kündigung (Art. 336 OR):</strong></p>
+<ul>
+<li><strong>Rachekündigung:</strong> Kündigung, weil der Arbeitnehmer ein ihm zustehendes Recht geltend macht (z.B. Lohnforderung).</li>
+<li><strong>Vereitelungskündigung:</strong> Kündigung kurz vor Entstehung eines Anspruchs (z.B. vor Fälligkeit eines Dienstaltersgeschenks oder hohen Bonus), um diesen Anspruch zu vereiteln.</li>
+<li>Kündigung aufgrund einer persönlichen Eigenschaft (z.B. Rauchallergie), ohne dass der Arbeitgeber das ihm Zumutbare zum Schutz des Arbeitnehmers unternommen hat.</li>
+<li>Kündigung wegen Ausübung eines verfassungsmässigen Rechts (z.B. Meinungsäusserungsfreiheit), solange die Treuepflicht nicht verletzt wird.</li>
+<li>Kündigung kurz vor Pensionierung nach sehr langer Dienstzeit ohne zureichenden Grund.</li>
+</ul></div>`
+                    },
+                    {
+                        title: "9) Abgeltung von Ferienansprüchen mit dem Lohn",
+                        sachverhalt: "Mitarbeiter B kann seine Arbeitszeit grundsätzlich frei einteilen und es ist ihm auch freigestellt, wann er Ferien machen will. In der monatlichen Lohnabrechnung steht, dass mit der Lohnzahlung allfällige Ferienansprüche abgegolten sind. Ist das zulässig?",
+                        answer: `
+<p><strong>Grundsatz: Nein, grundsätzlich unzulässig.</strong></p>
+<p>Nach <span class="art-ref">Art. 329d Abs. 2 OR</span> dürfen Ferien während der Dauer des Arbeitsverhältnisses <strong>nicht durch Geldleistungen oder andere Vergünstigungen abgegolten werden</strong>. Der Sinn und Zweck der Ferien — Erholung des Arbeitnehmers — würde verfehlt, wenn Ferien einfach «ausbezahlt» und gleichzeitig nicht effektiv bezogen würden. Diese Bestimmung ist absolut zwingend (<span class="art-ref">Art. 361 OR</span>) und kann somit nicht vertraglich wegbedungen werden — auch nicht durch eine generelle Klausel in der Lohnabrechnung.</p>
+<p>Eine Ausnahme besteht praxisgemäss nur für <strong>unregelmässige Beschäftigungsverhältnisse</strong> mit stark wechselndem Beschäftigungsgrad (z.B. echte Abrufarbeit auf Stundenlohnbasis), wo eine pauschale Ferienentschädigung als separat ausgewiesener Lohnbestandteil (üblich: 8,33% bzw. 10,64% des Bruttolohns je nach Ferienanspruch) gemäss Rechtsprechung des Bundesgerichts ausnahmsweise zulässig ist — allerdings nur unter strengen Voraussetzungen (insbesondere: der Anteil muss in Lohnausweis/-abrechnung <strong>ausdrücklich und gesondert</strong> ausgewiesen werden).</p>
+<p>Im vorliegenden Fall ist nicht erkennbar, dass es sich um ein solches unregelmässiges Abrufarbeitsverhältnis handelt — die freie Einteilung der Arbeits- und Ferienzeit allein genügt dafür nicht. Die pauschale Abgeltungsklausel in der Lohnabrechnung ist daher <strong>grundsätzlich nichtig</strong>; Mitarbeiter B hat weiterhin Anspruch auf effektiven Ferienbezug nach <span class="art-ref">Art. 329a OR</span> (mind. 4 Wochen pro Dienstjahr, bzw. 5 Wochen bis zum vollendeten 20. Altersjahr).</p>`
+                    },
+                    {
+                        title: "10) Lohnanspruch beim neuen Arbeitgeber nach Motorradunfall",
+                        sachverhalt: "Fritz Müller hat seinen Job auf Ende Januar gekündigt, um 4 Monate zu reisen. Kurz vor Antritt der Reise unterschreibt er einen neuen Arbeitsvertrag ab 1. Juni. Anfangs Mai wird er bei einem Motorradunfall verletzt und für 2 Monate arbeitsunfähig. Er kann erst anfangs Juli antreten. Ist der neue Arbeitgeber gesetzlich verpflichtet, ihm trotzdem Lohn zu bezahlen?",
+                        answer: `
+<p><strong>Kernfrage:</strong> Entsteht die Lohnfortzahlungspflicht nach Art. 324a OR bereits vor dem vereinbarten Stellenantritt, wenn der Arbeitnehmer aufgrund einer unverschuldeten Verhinderung gar nicht erst antreten kann?</p>
+<p>Die Pflicht zur Lohnfortzahlung bei unverschuldeter Verhinderung (<span class="art-ref">Art. 324a OR</span>) setzt grundsätzlich ein <strong>bestehendes Arbeitsverhältnis</strong> voraus, bei dem der Arbeitnehmer seine Arbeitsleistung bereits erbringt bzw. anbietet. Das Arbeitsverhältnis mit dem neuen Arbeitgeber beginnt aber erst am 1. Juni. Fritz Müller wird zwar bereits ab Anfang Mai arbeitsunfähig, jedoch noch <strong>vor</strong> dem vereinbarten Stellenantritt.</p>
+<p>Nach herrschender Lehre und Rechtsprechung beginnt die Pflicht zur Lohnfortzahlung erst mit dem <strong>effektiven Beginn des Arbeitsverhältnisses</strong>. Da Fritz die Stelle plangemäss erst am 1. Juni antreten sollte und zu diesem Zeitpunkt das Arbeitsverhältnis bereits gültig besteht (der Vertrag wurde ja bereits unterzeichnet), wird die Verhinderung an diesem Tag relevant: Fritz ist ab dem vereinbarten Stellenantritt (1. Juni) weiterhin unverhindert arbeitsunfähig (Unfall Anfang Mai, 2 Monate Arbeitsunfähigkeit = bis ca. Anfang Juli).</p>
+<p><strong>Ergebnis:</strong> Der neue Arbeitgeber ist verpflichtet, Fritz <strong>ab dem vereinbarten Stellenantritt (1. Juni)</strong> Lohn nach Massgabe von Art. 324a OR fortzuzahlen, obwohl Fritz die Arbeit faktisch noch nicht aufgenommen hat — vorausgesetzt, das Arbeitsverhältnis hat zu diesem Zeitpunkt bereits rechtlich Bestand (was hier der Fall ist, da der Vertrag bereits unterschrieben wurde). Für die Zeit <em>vor</em> dem 1. Juni (also den Unfall im Mai) besteht hingegen keine Lohnfortzahlungspflicht des neuen Arbeitgebers, da das Arbeitsverhältnis zu diesem Zeitpunkt noch nicht begonnen hatte. Im ersten Dienstjahr beträgt die Lohnfortzahlungsdauer mindestens 3 Wochen (<span class="art-ref">Art. 324a Abs. 2 OR</span>); reicht diese nicht für die volle Dauer der Verhinderung ab Stellenantritt, entfällt die Lohnpflicht nach Ablauf dieser Frist.</p>`
+                    }
+                ]
+            },
+            {
+                id: "werkauftrag",
+                label: "Werkvertrag & Auftrag",
+                color: "#2563EB",
+                desc: "Abgrenzung Werkvertrag / Auftrag, Mängelrechte, Sorgfaltspflicht.",
+                tasks: [
+                    {
+                        title: "1) Formfreiheit des Werkvertrags",
+                        sachverhalt: "Ein Werkvertrag kann formfrei geschlossen werden, korrekt?",
+                        answer: `
+<p><strong>Korrekt.</strong> Der Werkvertrag (<span class="art-ref">Art. 363 OR</span>) unterliegt grundsätzlich keiner besonderen Formvorschrift und kann daher formfrei — also auch mündlich oder durch konkludentes Verhalten — gültig geschlossen werden.</p>
+<p>Aus Beweisgründen empfiehlt sich in der Praxis dennoch häufig die schriftliche Fixierung der wesentlichen Punkte (Werk, Preis, Termine), insbesondere bei umfangreicheren oder werthaltigeren Vorhaben (z.B. Bauverträge) — eine gesetzliche Formvorschrift besteht dafür im OR aber grundsätzlich nicht.</p>`
+                    },
+                    {
+                        title: "2) Vorgehen des Bestellers bei Mängeln",
+                        sachverhalt: "Wie muss der Besteller vorgehen, wenn er das Werk entgegennimmt? Was muss er tun, wenn er Mängel entdeckt? Welche Möglichkeiten hat er dann?",
+                        answer: `
+<p><strong>Entgegennahme/Abnahme des Werks:</strong> Der Besteller muss das Werk nach Ablieferung prüfen, sobald es nach dem üblichen Geschäftsgang möglich ist, und dem Unternehmer allfällige Mängel <strong>unverzüglich</strong> anzeigen (<span class="art-ref">Art. 367 OR</span> i.V.m. der sinngemäss anwendbaren Prüfungs- und Anzeigepflicht aus Art. 201 OR). Offene (erkennbare) Mängel müssen sofort gerügt werden, sonst gilt das Werk als genehmigt; verdeckte Mängel müssen sofort nach ihrer Entdeckung gerügt werden.</p>
+<p><strong>Bei entdeckten Mängeln stehen dem Besteller nach Art. 368 OR folgende Wahlrechte zu:</strong></p>
+<ul>
+<li><strong>Wandelung:</strong> Rücktritt vom Vertrag, sofern das Werk für den Besteller unbrauchbar ist oder die Annahme unzumutbar erscheint.</li>
+<li><strong>Minderung:</strong> Herabsetzung der Vergütung im Verhältnis zur Wertminderung.</li>
+<li><strong>Nachbesserung (Verbesserung):</strong> Verlangen, dass der Unternehmer den Mangel auf seine Kosten behebt — sofern dies nicht mit unverhältnismässigen Kosten verbunden ist.</li>
+</ul>
+<p>Zusätzlich kann der Besteller bei Verschulden des Unternehmers Schadenersatz verlangen.</p>`
+                    },
+                    {
+                        title: "3) Klavierreparatur: Auftrag oder Werkvertrag?",
+                        sachverhalt: "Handelt es sich bei der Reparatur eines Klaviers um einen Auftrag oder um einen Werkvertrag? Begründen Sie kurz anhand der Ihnen bekannten Abgrenzungskriterien.",
+                        answer: `
+<p><strong>Es handelt sich um einen Werkvertrag (Art. 363 OR).</strong></p>
+<p>Abgrenzungskriterien Werkvertrag vs. Auftrag:</p>
+<ul>
+<li><strong>Erfolgsbezogenheit:</strong> Bei der Klavierreparatur steht ein konkretes, messbares <strong>Ergebnis</strong> im Vordergrund — das funktionstüchtig reparierte Klavier. Es ist also ein Erfolg geschuldet, nicht bloss ein sorgfältiges Tätigwerden.</li>
+<li><strong>Im Zentrum steht das Werk:</strong> Die Reparatur einer Sache (Veränderung/Instandsetzung) ist ein klassischer Anwendungsfall des Werkvertrags (vgl. Beispiele wie Autoreparatur, Anfertigung eines Möbelstücks).</li>
+<li>Der Reparateur verwendet eigene Arbeitsmittel und erbringt eine einmalige, in sich abgeschlossene Leistung.</li>
+</ul>
+<p>Im Gegensatz dazu würde ein <strong>Auftrag</strong> vorliegen, wenn lediglich ein sorgfältiges Tätigwerden in fremdem Interesse geschuldet wäre, ohne dass ein bestimmter Erfolg zugesichert wird (typische Beispiele: anwaltliche Beratung, medizinische Behandlung). Da bei der Klavierreparatur aber der erfolgreiche Reparaturerfolg im Vordergrund steht, ist hier ein Werkvertrag einschlägig.</p>`
+                    },
+                    {
+                        title: "4) Unbegründete Verzögerung der Bauarbeiten",
+                        sachverhalt: "Auch nach mehrfacher Ermahnung verzögert der Unternehmer die Bauarbeiten unbegründet. Was kann der Besteller hier machen?",
+                        answer: `
+<p><strong>Einschlägig: Schuldnerverzug bei Werkverträgen (Art. 366 Abs. 1 OR i.V.m. Art. 102 ff. OR).</strong></p>
+<p>Beginnt der Unternehmer das Werk nicht rechtzeitig oder verzögert er es entgegen der Vertragspflicht in erheblichem Mass, sodass die Fertigstellung zum vereinbarten Termin unmöglich erscheint, kann der Besteller nach <span class="art-ref">Art. 366 Abs. 1 OR</span> bereits <strong>vor dem Ablieferungstermin</strong> vom Vertrag zurücktreten, ohne abwarten zu müssen.</p>
+<p>Konkrete Handlungsoptionen des Bestellers:</p>
+<ul>
+<li><strong>Mahnung mit Nachfristsetzung</strong> (analog Art. 107 OR): Der Besteller setzt dem Unternehmer eine angemessene Nachfrist zur Fertigstellung (hier bereits mehrfach erfolgt).</li>
+<li>Nach fruchtlosem Ablauf der Nachfrist kann der Besteller wählen zwischen: <strong>Festhalten am Vertrag</strong> und Schadenersatz wegen Verspätung verlangen, <strong>Rücktritt vom Vertrag</strong> (mit Schadenersatzanspruch für den entstandenen Schaden), oder die <strong>Ersatzvornahme</strong> verlangen, d.h. einen Dritten mit der Fertigstellung beauftragen auf Kosten des ursprünglichen Unternehmers.</li>
+</ul>
+<p>Da der Unternehmer hier <strong>unbegründet</strong> (also schuldhaft) verzögert, haftet er dem Besteller zusätzlich für den durch die Verspätung entstandenen Schaden.</p>`
+                    },
+                    {
+                        title: "5) Anwalt verweigert Mandatsniederlegung",
+                        sachverhalt: "Der Anwalt weigert sich kurz vor der Verhandlung, das Mandat niederzulegen. Er ist der Meinung, dass er bereits alle Vorbereitungshandlungen gemacht habe und so kurzfristig keinen neuen Klienten mehr finden würde. Der Klient ist da anderer Meinung. Wer hat Recht?",
+                        answer: `
+<p><strong>Der Klient hat Recht — der Auftrag kann jederzeit widerrufen bzw. gekündigt werden.</strong></p>
+<p>Beim Auftrag (<span class="art-ref">Art. 404 Abs. 1 OR</span>) kann der Auftraggeber den Auftrag <strong>jederzeit</strong> widerrufen und der Beauftragte ihn jederzeit kündigen — diese Bestimmung ist <strong>zwingender Natur</strong> und kann vertraglich nicht ausgeschlossen werden, da das Vertrauensverhältnis als Wesensmerkmal des Auftrags höchstpersönlicher Natur ist.</p>
+<p>Der Klient (Auftraggeber) kann das Mandat also <strong>jederzeit</strong> beendigen, unabhängig davon, ob der Anwalt bereits Vorbereitungshandlungen vorgenommen hat. Erfolgt der Widerruf jedoch <strong>zur Unzeit</strong> (z.B. kurz vor einer wichtigen Verhandlung, ohne dass der Anwalt sich noch rechtzeitig auf die neue Situation einstellen oder Ersatz organisieren kann), ist der Klient gemäss <span class="art-ref">Art. 404 Abs. 2 OR</span> zum Ersatz des dem Anwalt dadurch entstehenden Schadens verpflichtet.</p>
+<p><strong>Ergebnis:</strong> Der Anwalt kann sich gegen den Widerruf des Klienten nicht wehren — er muss das Mandat niederlegen bzw. die Auflösung akzeptieren. Sollte der Widerruf «zur Unzeit» erfolgt sein, kann der Anwalt aber Schadenersatz für die ihm dadurch entstehenden Nachteile (z.B. entgangenes Honorar für bereits geleistete, aber durch die Kündigung nutzlos gewordene Vorbereitungsarbeit) verlangen. Das Recht, das Mandat <em>jederzeit</em> zu beenden, bleibt davon aber unberührt — es ist nur ein Schadenersatzanspruch, kein Recht, die Kündigung zu verweigern.</p>`
+                    },
+                    {
+                        title: "6) Anwalt Rudi R. — Sorgfaltspflicht trotz Bekanntschaft",
+                        sachverhalt: "Rechtsanwalt Rudi R. ist mit der Hereinbringung der offenen Schuld von P beauftragt worden. P ist ein alter Kollege aus der Grundschule von R. Zwar macht R Schreiben an P, unterlässt es aber, diesen auch betreibungs- oder zivilrechtlich zu belangen. R ist der Meinung, dass P schon einmal zahlen würde und sein Klient C genug Geld habe.",
+                        answer: `
+<p><strong>Es handelt sich um einen Auftrag (Art. 394 OR).</strong></p>
+<p>Rudi R. übernimmt im Interesse seines Klienten C die Besorgung eines Geschäfts (Inkasso/Forderungseinzug) — ein klassischer Rechtshandlungsauftrag.</p>
+<p>Rudi R. hat in diesem Fall seine <strong>Sorgfaltspflicht</strong> (<span class="art-ref">Art. 398 Abs. 2 OR</span>) <strong>grob verletzt</strong>: Als Beauftragter schuldet er ein sorgfältiges Tätigwerden im Interesse des Auftraggebers C, nicht in seinem eigenen Interesse oder im Interesse der Gegenseite P. Indem R aufgrund seiner persönlichen Bekanntschaft mit P bewusst auf weitergehende rechtliche Schritte (Betreibung, Klage) verzichtet, bevorzugt er die Gegenseite zulasten seines eigenen Klienten — dies stellt einen klaren Verstoss gegen die Treue- und Sorgfaltspflicht des Beauftragten dar.</p>
+<p>Die Begründung, der Klient C habe «genug Geld», ist <strong>kein rechtlich relevantes Argument</strong>, um eine pflichtgemässe Mandatsausführung zu unterlassen — der Beauftragte muss unabhängig von der finanziellen Situation des Auftraggebers im bestmöglichen Interesse des Auftraggebers handeln. Rudi R. haftet C daher für den durch die Pflichtverletzung entstandenen Schaden (<span class="art-ref">Art. 398 i.V.m. Art. 97 OR</span>), z.B. wenn die Forderung gegenüber P inzwischen verjährt oder uneinbringlich geworden ist.</p>`
+                    },
+                    {
+                        title: "7) Verzogene Türe nach der Auslieferung",
+                        sachverhalt: "X lässt sich von einer Schreinerei eine Türe anfertigen. Kurze Zeit nach der Auslieferung verzieht sich das Holz an mehreren Stellen, so dass die Tür nicht mehr geschlossen werden kann. X verlangt eine Reparatur. Kann die Schreinerei die Beseitigung des Fehlers mit dem Hinweis verweigern, sie hätte den Fehler nicht verursacht?",
+                        answer: `
+<p><strong>Es handelt sich um einen Werkvertrag (Art. 363 OR).</strong></p>
+<p>Die Anfertigung der Türe durch die Schreinerei ist ein klassischer Werkvertrag: Die Schreinerei schuldet den Erfolg — eine funktionstüchtige, schliessbare Türe.</p>
+<p>Da die Tür sich kurze Zeit nach der Auslieferung verzieht und nicht mehr schliesst, liegt ein <strong>Mangel</strong> im Sinne von <span class="art-ref">Art. 368 OR</span> vor. Bei der werkvertraglichen Mängelhaftung gilt eine <strong>Kausalhaftung bzw. vermutete Verantwortlichkeit</strong> des Unternehmers: Die Schreinerei haftet grundsätzlich für Mängel des abgelieferten Werks, unabhängig davon, ob sie den Mangel persönlich «verursacht» hat, solange die Ursache in ihrem Verantwortungsbereich liegt (z.B. ungeeignetes oder nicht ausreichend getrocknetes Holz, fehlerhafte Verarbeitung).</p>
+<p>Die blosse Behauptung, «den Fehler nicht verursacht zu haben», genügt zur Entlastung <strong>nicht</strong>. Die Schreinerei könnte sich höchstens entlasten, wenn sie nachweist, dass die Ursache des Mangels <strong>ausschliesslich</strong> im Verantwortungsbereich des Bestellers X liegt (z.B. unsachgemässe Lagerung oder extreme klimatische Bedingungen, die X zu vertreten hat). Gelingt ihr dieser Beweis nicht, muss die Schreinerei die Reparatur auf eigene Kosten vornehmen (Nachbesserungsanspruch nach Art. 368 Abs. 2 OR).</p>`
+                    },
+                    {
+                        title: "8) Undichte Fenster — Mängelrüge erst im Winter",
+                        sachverhalt: "Roman hat sich seinen Traum vom Eigenheim erfüllt. Nach der Abnahme entdeckt er aber einige undichte Fenster. Da es aber gerade Sommer ist, kommt ihm der Luftzug gerade recht. Im Winter aber wird es ungemütlich und Roman geht auf den Unternehmer zu und rügt diese Mängel.",
+                        answer: `
+<p><strong>Es könnte sich um einen Kaufvertrag oder um einen Werkvertrag handeln</strong> (je nachdem, ob das Haus als Ganzes erstellt oder eine bereits gebaute Liegenschaft gekauft wurde) — im Kern geht es aber um die rechtzeitige Mängelrüge.</p>
+<p>Roman hat die undichten Fenster bereits <strong>bei der Abnahme im Sommer bemerkt</strong> — es handelt sich also um einen <strong>offenen (erkennbaren) Mangel</strong>. Nach den Grundsätzen der Prüfungs- und Rügepflicht (<span class="art-ref">Art. 367 OR</span> bzw. analog Art. 201 OR) müssen offene Mängel <strong>unverzüglich nach Entdeckung</strong> gerügt werden — unabhängig davon, ob sie zum aktuellen Zeitpunkt subjektiv störend empfunden werden oder nicht.</p>
+<p>Indem Roman die Mängelrüge bewusst bis zum Winter aufschiebt (weil ihm der Luftzug im Sommer «gerade recht» kommt), hat er das Werk durch sein Verhalten <strong>stillschweigend genehmigt</strong>. Eine derart verspätete Rüge dürfte daher als <strong>nicht mehr rechtzeitig</strong> gelten — Roman verwirkt damit grundsätzlich seine Mängelrechte (Nachbesserung, Minderung, Wandelung) für diesen bereits bei Abnahme erkennbaren Mangel.</p>
+<p>Anders wäre es, wenn es sich um einen <strong>verdeckten</strong> Mangel gehandelt hätte, der erst im Winter erkennbar wurde — dann hätte die Rügefrist erst mit der tatsächlichen Entdeckung im Winter zu laufen begonnen. Da Roman den Mangel aber bereits im Sommer kannte, hat er bei der jetzigen, verspäteten Rüge keine guten Erfolgsaussichten.</p>`
+                    },
+                    {
+                        title: "9) Abgebrannte Scheune — vier Varianten",
+                        sachverhalt: "Ein Unternehmer hat für den Besteller A eine Scheune errichtet, die dann abbrennt: 1. wegen eines Blitzschlags nach der Fertigstellung, aber noch vor der Abnahme; 2. wegen eines Blitzschlags nach Fertigstellung und Abnahme; 3. nach der Fertigstellung und vor der Abnahme, weil A bei einer gemeinsamen Begehung achtlos seine Zigarette weggeworfen hat; 4. nach Fertigstellung und vor Abnahme, weil A schon Heu in die Scheune eingebracht und dieses sich selbst entzündet hat, ohne dass A das vertreten muss. (Beachte Art. 376 f. OR)",
+                        answer: `
+<p>Massgebend ist <span class="art-ref">Art. 376 OR</span>: Vor der Abnahme trägt grundsätzlich der <strong>Unternehmer</strong> die Gefahr des zufälligen Untergangs des Werks (er hat noch keinen Anspruch auf die Vergütung, wenn das Werk vor Abnahme durch Zufall zerstört wird), es sei denn, der Besteller befindet sich im Verzug mit der Abnahme oder der Untergang ist auf ein Verhalten des Bestellers zurückzuführen.</p>
+<div class="sub-q"><p><strong>1. Blitzschlag nach Fertigstellung, vor Abnahme:</strong> Reiner Zufall, der niemandem zuzurechnen ist und vor der Abnahme eintritt. Nach <span class="art-ref">Art. 376 Abs. 1 OR</span> trägt grundsätzlich der <strong>Unternehmer</strong> die Kosten/das Risiko — er verliert seinen Anspruch auf die Vergütung (ausser der Besteller wäre mit der Abnahme im Verzug gewesen).</p></div>
+<div class="sub-q"><p><strong>2. Blitzschlag nach Fertigstellung UND Abnahme:</strong> Mit der Abnahme geht die Gefahr auf den Besteller über. <strong>Besteller A trägt</strong> das Risiko/den Schaden — der Unternehmer behält seinen Vergütungsanspruch. Eine Ausnahme bestünde, wenn der Unternehmer vorher ausdrücklich zugesichert hätte, die Scheune sei «blitzschlagresistent» (zugesicherte Eigenschaft) — dann könnte sich eine Mängelhaftung des Unternehmers ergeben.</p></div>
+<div class="sub-q"><p><strong>3. Brand durch achtlos weggeworfene Zigarette von A (vor Abnahme):</strong> Der Untergang ist hier auf ein <strong>schuldhaftes Verhalten des Bestellers A</strong> selbst zurückzuführen. Nach <span class="art-ref">Art. 376 Abs. 3 OR</span> bleibt der Unternehmer in diesem Fall trotz Zerstörung vor Abnahme <strong>anspruchsberechtigt</strong> auf seine Vergütung, da A den Schaden durch sein eigenes Verschulden (mit-)verursacht hat. Der Unternehmer wird also so behandelt, als wäre das Werk fertiggestellt und abgenommen worden.</p></div>
+<div class="sub-q"><p><strong>4. Selbstentzündung des vom Besteller eingebrachten Heus (vor Abnahme, ohne Verschulden des A):</strong> Hier hat A zwar das Heu eingebracht (was ursächlich zum Brand führte), muss dies aber nicht vertreten (kein Verschulden). Es handelt sich um eine Konstellation, in der der <strong>Sphäre des Bestellers</strong> zuzurechnende Umstände zum Schaden führten, ohne dass A ein Verschulden trifft. Nach den Grundsätzen von <span class="art-ref">Art. 376 OR</span> (Gefahrenzuordnung nach Verantwortungsbereich, nicht nur nach Verschulden) wird in dieser Konstellation regelmässig davon ausgegangen, dass der Besteller A das Risiko zu tragen hat, da die schadensverursachende Sache (das Heu) aus seiner Sphäre stammte und er sie eingebracht hat — der Unternehmer dürfte damit seinen Vergütungsanspruch behalten, ähnlich wie im Fall 3, jedoch mit der Differenzierung, dass hier kein Verschulden, sondern reine Risikosphäre des Bestellers ausschlaggebend ist.</p></div>`
+                    }
+                ]
+            },
+            {
+                id: "itvertraege",
+                label: "IT-Verträge",
+                color: "#0EA5A4",
+                desc: "Vertragstypologie und Haftungsklauseln bei IT-Verträgen.",
+                tasks: [
+                    {
+                        title: "1) Zuordnung der IT-Verträge zu Nominatverträgen",
+                        sachverhalt: "Versuchen Sie folgende Verträge einem möglichst passenden Nominatvertrag zuzuordnen: Hardwareverkaufsvertrag, Softwareentwicklungsvertrag, Roamingverträge, Software-Distributionsvertrag, Erbringung von Hosting-Dienstleistungen, Konzeption und Realisierung einer Web-Applikation, Erstellen einer Website.",
+                        answer: `
+<ul>
+<li><strong>Hardwareverkaufsvertrag</strong> → <strong>Kaufvertrag</strong> (Art. 184 ff. OR): Verkauf einer beweglichen Sache (Fahrniskauf) gegen Bezahlung des Kaufpreises.</li>
+<li><strong>Softwareentwicklungsvertrag</strong> → <strong>Werkvertrag</strong> (Art. 363 ff. OR): Der Entwickler schuldet ein bestimmtes Ergebnis (die funktionierende Software gemäss Pflichtenheft/Vorgaben des Bestellers) — Erfolg ist geschuldet.</li>
+<li><strong>Roamingverträge</strong> → am ehesten ein <strong>Innominatvertrag sui generis</strong> bzw. eine Mischform aus Dienstleistungsvertrag und Nutzungsüberlassung; im Kern eine entgeltliche Nutzungsüberlassung von Fernmeldedienstleistungen, vergleichbar einem Auftrag/Dienstleistungsvertrag mit Elementen der Miete (Nutzungsrecht).</li>
+<li><strong>Software-Distributionsvertrag</strong> → am ehesten ein <strong>Agenturvertrag</strong> (Art. 418a ff. OR) oder ein Innominatvertrag mit Elementen des Auftrags, da der Vertreiber im Interesse des Herstellers/Lieferanten Geschäfte vermittelt bzw. abschliesst.</li>
+<li><strong>Erbringung von Hosting-Dienstleistungen</strong> → Mischform aus <strong>Miete</strong> (Überlassung von Speicherplatz/Serverinfrastruktur zum Gebrauch, Art. 253 ff. OR) und <strong>Auftrag/Werkvertrag</strong> für die begleitenden Dienstleistungen (Wartung, Support).</li>
+<li><strong>Konzeption und Realisierung einer Web-Applikation</strong> → <strong>Werkvertrag</strong> (Art. 363 ff. OR), da ein bestimmtes, abgrenzbares Ergebnis (die funktionsfähige Web-Applikation) geschuldet ist.</li>
+<li><strong>Erstellen einer Website</strong> → ebenfalls <strong>Werkvertrag</strong> (Art. 363 ff. OR), da auch hier ein konkretes Endergebnis (die fertige Website) im Vordergrund steht.</li>
+</ul>
+<p><em>Hinweis:</em> Da viele IT-Verträge Elemente mehrerer Nominatverträge kombinieren, handelt es sich in der Praxis häufig um <strong>gemischte Verträge bzw. Innominatverträge</strong>, auf die je nach Schwerpunkt einzelne Bestimmungen der jeweils passenden Nominatverträge analog angewendet werden.</p>`
+                    },
+                    {
+                        title: "2) Beurteilung der Haftungsklausel aus Sicht des Bestellers",
+                        sachverhalt: "Eine Vertragsklausel sieht vor: Haftung von Optiwork nur bei rechtswidriger Absicht oder grober Fahrlässigkeit; Begrenzung des Schadenersatzes auf die unter dem Einzelvertrag bereits geleisteten jährlichen Zahlungen; vollständiger Ausschluss der Haftung für Mangelfolgeschäden, mittelbare Schäden, entgangenen Gewinn, Frustrationsschäden und Drittansprüche; Haftungsausschluss bei Eingriffen Dritter oder eigenmächtigen Änderungen durch den Kunden; Haftungsausschluss bei unzureichender Mitwirkung des Kunden; kein Haftungsanspruch bei Leistungsverhinderung, die Optiwork nicht zu vertreten hat. Beurteilen Sie diese Klausel aus Sicht des Bestellers. Was würden Sie ändern?",
+                        answer: `
+<p><strong>Beurteilung aus Sicht des Bestellers (Kunde):</strong> Diese Klausel ist insgesamt <strong>sehr einseitig zugunsten von Optiwork</strong> formuliert und schränkt die Haftung des Anbieters massiv ein. Im Einzelnen:</p>
+<ul>
+<li><strong>Haftungsbeschränkung auf grobe Fahrlässigkeit/Vorsatz (Ziff. 8.1):</strong> Damit haftet Optiwork bei leichter und mittlerer Fahrlässigkeit gar nicht. Nach <span class="art-ref">Art. 100 Abs. 1 OR</span> ist eine <em>vorgängige</em> Vereinbarung, wonach die Haftung für Vorsatz oder grobe Fahrlässigkeit ausgeschlossen wird, nichtig — diese Klausel hält sich noch im zulässigen Rahmen (sie schliesst leichte/mittlere Fahrlässigkeit aus, was grundsätzlich zulässig ist), benachteiligt den Kunden aber stark, da typische Sorgfaltspflichtverletzungen oft als «einfache» Fahrlässigkeit eingestuft werden.</li>
+<li><strong>Begrenzung der Schadenersatzhöhe (Ziff. 8.2):</strong> Die Begrenzung auf die bereits geleisteten Jahreszahlungen kann bei einem Schaden, der die Vertragssumme deutlich übersteigt (z.B. Datenverlust mit erheblichen Folgekosten), den Kunden empfindlich benachteiligen.</li>
+<li><strong>Vollständiger Ausschluss von Mangelfolgeschäden, entgangenem Gewinn etc. (Ziff. 8.3):</strong> Gerade bei IT-Ausfällen sind Folgeschäden (z.B. Produktionsausfälle, Reputationsschäden) oft der eigentliche wirtschaftliche Schaden — ihr vollständiger Ausschluss trifft den Kunden hart.</li>
+<li><strong>Ziff. 8.4–8.6</strong> sind als solche nachvollziehbar (Haftungsausschluss bei Drittverschulden oder unzureichender Mitwirkung des Kunden), sollten aber präzise und nicht zu weit gefasst sein, um nicht auch Fälle zu erfassen, die in den Verantwortungsbereich von Optiwork fallen.</li>
+</ul>
+<p><strong>Änderungsvorschläge aus Sicht des Bestellers:</strong></p>
+<ul>
+<li>Haftung zumindest auch für <strong>mittlere Fahrlässigkeit</strong> vorsehen, insbesondere bei sicherheitsrelevanten Funktionen.</li>
+<li>Eine <strong>höhere oder differenziertere Haftungsobergrenze</strong> vereinbaren (z.B. ein Mehrfaches der Jahresvergütung, oder eine fixe Höchstsumme, die dem tatsächlichen Schadenspotential besser entspricht), statt strikt auf die bereits geleisteten Zahlungen abzustellen.</li>
+<li>Den <strong>vollständigen</strong> Ausschluss von Mangelfolgeschäden zumindest für grobe Pflichtverletzungen oder besonders kritische Schadensarten (z.B. Datenverlust) aufheben oder abschwächen.</li>
+<li>Die Ausschlussgründe in Ziff. 8.4–8.6 präziser fassen (z.B. nur bei <strong>kausalem</strong> Zusammenhang zwischen der Drittintervention/unzureichenden Mitwirkung und dem konkreten Schaden), damit Optiwork sich nicht pauschal aus der Verantwortung ziehen kann.</li>
+<li>Eine Versicherungslösung (z.B. Cyber-Versicherung) als Ergänzung in Betracht ziehen, um das verbleibende Restrisiko abzudecken.</li>
+</ul>`
+                    }
+                ]
+            },
+            {
+                id: "haftpflicht",
+                label: "Haftpflichtrecht & PrHG",
+                color: "#C0392B",
+                desc: "Produktehaftpflicht (PrHG) und komplexe Fälle mit mehreren Anspruchsgrundlagen.",
+                tasks: [
+                    {
+                        title: "1) Reissendes Kletterseil — drei Varianten",
+                        sachverhalt: "Roman kauft bei einem Sportfachgeschäft ein Kletterseil, das gemäss Hersteller (alternativ Verkäufer) ca. 1000 kg tragen können soll. Es reisst aber bereits bei 50 kg. Bei der Begutachtung stellt sich heraus, dass das Seil: a. einen Materialfehler hat; b. bereits beim Kauf beschädigt worden sein muss; c. irrtümlicherweise vom Verkäufer empfohlen worden ist und gar kein Kletterseil war.",
+                        answer: `
+<div class="sub-q"><p><strong>a) Materialfehler:</strong> Hier liegt ein klassischer <strong>Fabrikations- bzw. Konstruktionsfehler</strong> vor. Es kommen zwei Anspruchsgrundlagen in Betracht: <strong>Produktehaftpflicht nach PrHG</strong> gegenüber dem Hersteller (Voraussetzungen: Hersteller nach <span class="art-ref">Art. 2 PrHG</span>, Produkt nach Art. 3 PrHG, Fehler nach Art. 4 PrHG, Schaden nach Art. 1 PrHG über dem Selbstbehalt von CHF 900.–, Kausalzusammenhang) — dies ist eine reine Kausalhaftung, ein Verschulden muss nicht nachgewiesen werden. Zusätzlich/alternativ kommt eine <strong>kaufrechtliche Gewährleistung</strong> gegenüber dem Verkäufer (<span class="art-ref">Art. 197 OR</span>) in Betracht, da das Seil nicht die zugesicherte Eigenschaft (1000 kg Tragkraft) aufweist.</p></div>
+<div class="sub-q"><p><strong>b) Bereits beim Kauf beschädigt:</strong> Auch hier handelt es sich um einen Mangel, der bereits bei Übergabe vorlag. Vorrangig einschlägig ist die <strong>kaufrechtliche Mängelhaftung</strong> (<span class="art-ref">Art. 197 OR</span>) gegenüber dem Verkäufer, da die Sache bei Übergabe bereits nicht der vorausgesetzten Beschaffenheit entsprach. Eine Produktehaftpflicht nach PrHG kommt ebenfalls in Frage, wenn die Beschädigung dem Hersteller zuzurechnen ist (z.B. unsachgemässe Verpackung/Lagerung vor Inverkehrbringen); war die Beschädigung aber erst beim Verkäufer (z.B. durch falsche Lagerung im Geschäft) entstanden, haftet eher der Verkäufer kaufrechtlich.</p></div>
+<div class="sub-q"><p><strong>c) Kein Kletterseil, irrtümliche Falschberatung:</strong> Hier liegt primär ein <strong>Beratungsfehler des Verkäufers</strong> vor — kein Produktmangel im engeren Sinne (das Seil ist möglicherweise einwandfrei, nur für den Zweck ungeeignet). Es kommt eine <strong>vertragliche Haftung</strong> des Verkäufers wegen Verletzung seiner Aufklärungs- bzw. Beratungspflicht in Betracht (<span class="art-ref">Art. 97 OR</span>), da die falsche Empfehlung kausal zum Schaden geführt hat. Eine Produktehaftpflicht nach PrHG scheidet hier mangels Produktfehler grundsätzlich aus, da das Produkt selbst nicht fehlerhaft ist — der Fehler liegt in der Beratung.</p></div>`
+                    },
+                    {
+                        title: "2) Komplexer Fall: Sabotierte Haushaltsgeräte",
+                        sachverhalt: "Roman ist Unternehmer und stellt individuell gefertigte Haushaltsgeräte her. Peter, sein angestellter Entwickler, sabotiert aus Rachsucht mehrere Geräte (Kühlschrank, Waschmaschine, Kochherd). Roman händigt die Geräte unwissentlich aus. Bei einem Kunden kommt es zu einem Küchenbrand mit schwerer Verletzung; die Küche brennt komplett ab. Es kommt heraus, dass Peter für den Kurzschluss verantwortlich war (Vorsatz unklar). Roman entlässt Peter fristlos. Peter geht gegen die Kündigung vor. Prüfen Sie alle möglichen Ansprüche (Arbeitsvertrag, Werkvertrag, Auftrag, Produktehaftpflicht und ausservertragliche Haftungsgrundlagen).",
+                        answer: `
+<p>Dieser Fall verlangt eine <strong>mehrgleisige Prüfung</strong> verschiedener Anspruchsbeziehungen:</p>
+<div class="sub-q"><p><strong>1. Anspruch des geschädigten Kunden gegen Roman (Produktehaftpflicht, PrHG):</strong> Roman ist Hersteller im Sinne von <span class="art-ref">Art. 2 PrHG</span>. Das Gerät war im Sinne von <span class="art-ref">Art. 4 PrHG</span> fehlerhaft (es bot nicht die erwartete Sicherheit). Es ist eine Kausalhaftung — Verschulden ist <strong>nicht</strong> erforderlich. Roman haftet daher dem Kunden gegenüber für Personen- und Sachschäden nach <span class="art-ref">Art. 1 PrHG</span> (Personenschaden: die Verletzung; Sachschaden an der Küche, sofern privat genutzt und über dem Selbstbehalt von CHF 900.–), unabhängig davon, dass die Sabotage durch Peter und nicht durch Roman persönlich verursacht wurde. Roman kann sich nicht mit dem Hinweis auf Peters Verschulden exkulpieren — die Exkulpationsgründe nach <span class="art-ref">Art. 5 PrHG</span> greifen hier nicht (Sabotage ist kein «Stand von Wissenschaft und Technik»-Fall).</p></div>
+<div class="sub-q"><p><strong>2. Regress von Roman gegen Peter (Arbeitsvertrag):</strong> Peter hat als Arbeitnehmer seine <strong>Treue- und Sorgfaltspflicht</strong> (<span class="art-ref">Art. 321a OR</span>) auf das Gröbste verletzt, indem er die Geräte vorsätzlich sabotiert hat. Roman kann von Peter gestützt auf <span class="art-ref">Art. 321e OR</span> (Haftung des Arbeitnehmers für den durch vorsätzliche oder fahrlässige Verletzung seiner Pflichten verursachten Schaden) vollen Schadenersatz verlangen — sowohl für den Schaden, den Roman gegenüber dem Kunden ersetzen musste, als auch für allfällige eigene Reputationsschäden.</p></div>
+<div class="sub-q"><p><strong>3. Fristlose Kündigung von Peter:</strong> Die <strong>Sabotage von Produkten</strong> ist ein klassischer wichtiger Grund im Sinne von <span class="art-ref">Art. 337 OR</span> — das Vertrauensverhältnis ist offensichtlich und nachhaltig zerstört. Die fristlose Kündigung war damit <strong>gerechtfertigt</strong>, selbst wenn der Vorsatz nicht restlos geklärt ist, da bereits die Tatsache, dass Peter den Kurzschluss verursacht hat, in Kombination mit den anderen sabotierten Geräten ausreicht, um auf eine schwere Pflichtverletzung zu schliessen. Peters Forderungen gegen Roman wegen «ungerechtfertigter» fristloser Kündigung dürften daher nicht durchdringen — im Gegenteil haftet Peter Roman nach <span class="art-ref">Art. 337b OR</span> für den durch sein Verhalten verursachten Schaden.</p></div>
+<div class="sub-q"><p><strong>4. Anspruch des Kunden gegen Roman aus Werkvertrag (sofern individuell gefertigt):</strong> Da Roman «individuell gefertigte» Geräte herstellt, könnte zusätzlich ein <strong>Werkvertrag</strong> (<span class="art-ref">Art. 363 ff. OR</span>) zwischen Roman und dem Kunden vorliegen. Auch hier haftet Roman für Mängel des abgelieferten Werks (<span class="art-ref">Art. 368 OR</span>), unabhängig vom PrHG-Anspruch — die beiden Anspruchsgrundlagen können kumulativ bestehen (Anspruchskonkurrenz).</p></div>
+<div class="sub-q"><p><strong>5. Anspruch aus unerlaubter Handlung (Art. 41 OR):</strong> Daneben kommt auch eine Haftung von <strong>Peter direkt</strong> gegenüber dem geschädigten Kunden aus unerlaubter Handlung in Betracht (<span class="art-ref">Art. 41 OR</span>): Schaden, Widerrechtlichkeit (Eigentums- und Körperverletzung), Verschulden (zumindest Fahrlässigkeit, ggf. Vorsatz) und Kausalzusammenhang sind hier erfüllt. Der Kunde könnte sich also wahlweise an Roman (PrHG/Werkvertrag) oder direkt an Peter (Art. 41 OR) halten, wobei Roman als Hersteller in der Praxis das attraktivere (solventere) Haftungssubjekt sein dürfte. Zudem könnte Roman auch als Geschäftsherr nach <span class="art-ref">Art. 55 OR</span> für Peters Handlungen haften, sofern er nicht den Sorgfaltsbeweis erbringen kann (was angesichts der gezielten Sabotage allerdings eher unwahrscheinlich ist, da Sabotage schwer vorhersehbar/vermeidbar ist).</p></div>`
+                    },
+                    {
+                        title: "3) Komplexer Fall: Nichtige Kündigung wegen Krankheit",
+                        sachverhalt: "Roman wird im ersten Dienstjahr, nach Ablauf der Probezeit, fristlos gekündigt, während er für fünf Tage krankgeschrieben war. Grund sei eine falsche Deklaration der Arbeitszeiten — Roman bestreitet dies vehement. Sein Anwalt fordert die Wiederanstellung wegen Nichtigkeit der Kündigung. Der Arbeitgeber bricht den Kontakt ab; nach erfolgloser Schlichtung und Klageabweisung stellt der Anwalt Roman eine Honorarnote über CHF 10'000.– zu, die Roman nicht bezahlen möchte.",
+                        answer: `
+<p><strong>1. War die fristlose Kündigung tatsächlich nichtig/ungerechtfertigt?</strong></p>
+<p>Eine Krankschreibung allein macht eine fristlose Kündigung <strong>nicht automatisch nichtig</strong> — die Sperrfristen nach <span class="art-ref">Art. 336c OR</span> (Kündigungsschutz bei Krankheit) gelten nur für die <strong>ordentliche</strong> Kündigung, nicht für eine fristlose Kündigung aus wichtigem Grund. Eine fristlose Kündigung kann grundsätzlich auch während einer Krankschreibung erfolgen, sofern tatsächlich ein wichtiger Grund nach <span class="art-ref">Art. 337 OR</span> vorliegt (hier: angeblich falsche Deklaration der Arbeitszeiten — sofern diese sich erhärtet, kann sie durchaus einen wichtigen Grund darstellen, da Vertrauensbruch).</p>
+<p>Da Roman die falsche Deklaration vehement bestreitet, ist <strong>strittig</strong>, ob tatsächlich ein wichtiger Grund vorlag. Das Gericht hat im konkreten Fall die Klage (auf Wiederanstellung bzw. entsprechende Ansprüche) <strong>abgewiesen</strong> — es kam also offensichtlich zum Schluss, dass die fristlose Kündigung gerechtfertigt war bzw. dass keine Nichtigkeit vorlag.</p>
+<p><strong>2. Muss Roman die Honorarnote des Anwalts bezahlen?</strong></p>
+<p>Zwischen Roman und seinem Anwalt besteht ein <strong>Auftragsverhältnis</strong> (<span class="art-ref">Art. 394 ff. OR</span>). Der Anwalt schuldet im Rahmen des Auftrags sorgfältiges Tätigwerden, nicht aber den Erfolg (Obsiegen im Prozess) — dies ist die zentrale Abgrenzung zum Werkvertrag.</p>
+<p>Grundsätzlich hat der Beauftragte (Anwalt) Anspruch auf sein Honorar gemäss <span class="art-ref">Art. 394 Abs. 3 OR</span> (übliche Vergütung, sofern nichts anderes vereinbart wurde), <strong>unabhängig vom Ausgang des Verfahrens</strong> — solange er seine Sorgfaltspflicht nicht verletzt hat. Allein der Umstand, dass die Klage abgewiesen wurde, begründet noch keinen Honorarverlust, da der Anwalt keinen Erfolg schuldet.</p>
+<p>Roman könnte die Zahlung nur verweigern bzw. mindern, wenn er nachweisen könnte, dass der Anwalt seine <strong>Sorgfaltspflicht verletzt</strong> hat (z.B. eine offensichtlich aussichtslose Klage angestrengt, ohne Roman korrekt über die Erfolgsaussichten aufzuklären, oder Verfahrensfehler begangen hat) — dann käme eine Schadenersatzpflicht des Anwalts in Betracht, die mit dem Honoraranspruch verrechnet werden könnte. Liegt keine solche Pflichtverletzung vor, bleibt <strong>Roman zur Zahlung des Honorars verpflichtet</strong>, auch wenn das Verfahren für ihn nicht erfolgreich ausgegangen ist.</p>`
+                    }
+                ]
+            }
+        ];
+
+    </script>
+    <script>
+        let activeModule = 'all';
+
+        function getAllTasksFlat() {
+            const flat = [];
+            MODULES.forEach(mod => {
+                mod.tasks.forEach(t => flat.push({ mod, task: t }));
+            });
+            return flat;
+        }
+
+        function renderStats() {
+            const totalTasks = MODULES.reduce((sum, m) => sum + m.tasks.length, 0);
+            document.getElementById('statTotal').textContent = totalTasks;
+            document.getElementById('statModules').textContent = MODULES.length;
+        }
+
+        function renderNav() {
+            const nav = document.getElementById('topicNav');
+            let html = `
+    <button class="topic-nav-item ${activeModule === 'all' ? 'active' : ''}" onclick="selectModule('all')">
+      <span class="dot" style="background:#9E9C96"></span>
+      <span>Alle Module</span>
+      <span class="count">${MODULES.reduce((s, m) => s + m.tasks.length, 0)}</span>
+    </button>`;
+            MODULES.forEach(mod => {
+                html += `
+    <button class="topic-nav-item ${activeModule === mod.id ? 'active' : ''}" onclick="selectModule('${mod.id}')">
+      <span class="dot" style="background:${mod.color}"></span>
+      <span>${mod.label}</span>
+      <span class="count">${mod.tasks.length}</span>
+    </button>`;
+            });
+            nav.innerHTML = html;
+        }
+
+        function selectModule(id) {
+            activeModule = id;
+            renderNav();
+            renderHeader();
+            renderTasks();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderHeader() {
+            const eyebrow = document.getElementById('headerEyebrow');
+            const title = document.getElementById('headerTitle');
+            const desc = document.getElementById('headerDesc');
+            if (activeModule === 'all') {
+                eyebrow.textContent = 'Alle Module';
+                title.textContent = 'Alle Übungsaufgaben';
+                desc.textContent = 'Sämtliche Übungsaufgaben aus den Vorlesungsfolien — die Lösungen sind anhand der Vorlesungsinhalte erarbeitet, da im Original keine Musterlösungen vorlagen. Klicke auf eine Aufgabe, um die Lösung einzublenden.';
+            } else {
+                const mod = MODULES.find(m => m.id === activeModule);
+                eyebrow.textContent = mod.label;
+                title.textContent = mod.label;
+                desc.textContent = mod.desc;
+            }
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskContainer');
+            let html = '';
+            let globalIdx = 0;
+
+            const modulesToShow = activeModule === 'all' ? MODULES : MODULES.filter(m => m.id === activeModule);
+
+            modulesToShow.forEach(mod => {
+                if (activeModule === 'all') {
+                    html += `<div class="module-divider">${mod.label}</div>`;
+                }
+                mod.tasks.forEach((task, i) => {
+                    globalIdx++;
+                    const cardId = `${mod.id}-${i}`;
+                    html += `
+      <div class="task-card" id="card-${cardId}" data-card-id="${cardId}">
+        <div class="task-head" onclick="toggleCard('${cardId}')">
+          <div class="task-num" style="background:${hexToLight(mod.color)};color:${mod.color}">${globalIdx}</div>
+          <div class="task-body-text">
+            <div class="task-title">${task.title}</div>
+            <div class="task-sachverhalt">${task.sachverhalt}</div>
+          </div>
+          <div class="task-chevron">${ICON_CHEVRON}</div>
+        </div>
+        <div class="task-answer-wrap">
+          <div class="task-answer">
+            <div class="answer-box">
+              <div class="answer-label">${ICON_CHECK} Lösungsvorschlag</div>
+              ${task.answer}
+            </div>
+          </div>
+        </div>
+      </div>`;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        function hexToLight(hex) {
+            // Returns a light background tint for the task number badge
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r},${g},${b},0.13)`;
+        }
+
+        function toggleCard(id) {
+            const card = document.getElementById(`card-${id}`);
+            card.classList.toggle('open');
+        }
+
+        function toggleAll(open) {
+            document.querySelectorAll('.task-card').forEach(card => {
+                if (open) card.classList.add('open');
+                else card.classList.remove('open');
+            });
+        }
+
+        // Init
+        renderStats();
+        renderNav();
+        renderHeader();
+        renderTasks();
+
+    </script>
+</body>
+
+</html>
