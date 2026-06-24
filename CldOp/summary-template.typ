@@ -12,7 +12,6 @@
 #let accent = rgb("#7A1C5B")        // headline accent color (purple/magenta)
 #let light-accent = rgb("#F3E6EF")  // light background for boxes
 #let mono-bg = rgb("#F4F4F4")       // background for code/commands
-
 // --- Document setup -------------------------------------------------------
 #let conf(
   title: "Course Summary",
@@ -139,15 +138,16 @@
   block(
     width: 100%,
     fill: white,
-    stroke: 0.6pt + accent,
-    inset: 8pt,
-    radius: 3pt,
+    stroke: (left: 4pt + accent, rest: 0.6pt + gray.lighten(40%)),
+    inset: 10pt,
+    radius: 2pt,
   )[
-    #text(weight: "bold", fill: accent)[#term:] #body
+    #text(weight: "bold", fill: accent, size: 11pt)[#term]
+    #v(0.3em)
+    #body
   ]
   v(0.3em)
 }
-
 // Important / exam-relevant callout
 #let important(body) = {
   block(
@@ -276,4 +276,28 @@
     #v(0.3em)
     #enum(..items.map(i => [#i]))
   ]
+}
+
+// Named-item list — for enumerating strategies/patterns/principles where
+// each item has a short bold name followed by a one-line description.
+// `items` is an array of (name, description) pairs.
+// Optional `title` renders a small heading above the list.
+#let strategy-list(items, title: none) = {
+  block(
+    width: 100%,
+    fill: light-accent,
+    inset: 10pt,
+    radius: 4pt,
+  )[
+    #if title != none {
+      text(weight: "bold", fill: accent, size: 10.5pt)[#title]
+      v(0.5em)
+    }
+    #list(
+      ..items.map(((name, desc)) => [#text(weight: "bold")[#name:] #desc]),
+      marker: text(fill: accent)[•],
+      spacing: 0.6em,
+    )
+  ]
+  v(0.3em)
 }

@@ -33,7 +33,6 @@
     caption: [The DevOps Lifecycle in Phases],
   )
 
-  The DevOps Lifecycle consists of the following stages:
   #stage(
     number: 1,
     name: "Plan",
@@ -150,12 +149,19 @@
     name: "Operate",
     category: "Continuous Feedback",
     activities: (
-      "Write & refactor code",
-      "Local builds",
-      "Local tests",
-      "Peer review & gated merges",
+      "Document, troubleshoot and resolve issues",
+      "Scaling resources, applying patches, rotating secrets",
+      "Manage configuration drift detection and enforce desired-state",
+      "Back up critical data and verify restore procedure regularly",
+      "Ensure compliance reporting for regulatory requirements",
     ),
-    tools: ("GitLab", "GitHub", "Bitbucket"),
+    tools: (
+      "ServiceNow, PagerDuty, Opsgenie, VictorOps",
+      "HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, 1Password",
+      "Velero, Restic, AWS Backup, Azure Backup, BorgBackup, rsnapshot",
+      "Kubernetes Horizontal/Vertical Pod Autoscaler, AWS Auto Scaling Groups, Google Cloud Autoscaler, Azure VM Scale Sets",
+      "OpenSCAP, Falco, Aqua Security, Prisma Cloud, AWS Config, Azure Policy",
+    ),
   )
 
   #stage(
@@ -163,30 +169,100 @@
     name: "Monitor",
     category: "Continuous Feedback",
     activities: (
-      "Write & refactor code",
-      "Local builds",
-      "Local tests",
-      "Peer review & gated merges",
+      "Define service-level indicator (SLIs), service-level objectives",
+      "Build real-time dashboards",
+      "Configure and periodically check alerting rules",
+      "Run health checks to verify end-to-end functionality",
+      "Correlate logs, metrics, and traces",
     ),
-    tools: ("GitLab", "GitHub", "Bitbucket"),
+    tools: (
+      "Prometheus, InfluxDB, Graphite, Datadog Metrics, NewRelic Metrics",
+      "Grafana, Kibana, Datadog Dashboard, New Relic One",
+      "Jaeger, Zipkin, Lightstep, Dynatrace",
+      "ElasticStack (ELK/EFK), Loki+ Grafana, Splunk, Graylog",
+      "Pingdom, UptimeRobot, Grafana Synthetic Monitoring, NewRelic Synthetics",
+      "PrometheusAlertmanager, Grafana Alerting",
+    ),
   )
 
-  == CI/CD
+  - *Dev side*: Plan → Code → Build → Test
+  - *Ops side*: Deploy → Operate → Monitor
+  - *Release* is the bridge connecting both halves
+  #pagebreak()
+
+  == Continuous Lifecycle
 
   #def("Continuous Integration (CI)")[
     Practice of frequently merging code changes into a shared repository, with
-    automated build and test on every change.
+    automated build and test on every change.\
+    Entails:
+    - *Continuous Development* = Plan + Code
+    - *Continuous Integration* (narrower) = Code + Build
+    - *Continuous Testing* = Test
   ]
 
   #def("Continuous Deployment / Delivery (CD)")[
-    Automatically deploying every change that passes CI to staging/production.
+    Automatically deploying every change that passes CI to staging/production.\
+    Entails:
+    - *Continuous Delivery* = Test + Release
+      - code is automatically validated and packaged
+    - *Continuous Deployment*: Test + Release + Deploy
+      - goes one step further and automatically deploys every validated change to production
+
+
+    #strategy-list(
+      title: "Continuous Deployment Strategies",
+      (
+        ("Rolling deployment", "Update gradually to minimize downtime"),
+        ("Blue-green", "Two different environments for fast switching"),
+        ("Canary release", "Specify a user group to deploy to first"),
+        ("Feature flags", "Deploy but activate later"),
+        ("Dark launching", "Use real user traffic but hide it from them"),
+      ),
+    )
   ]
+
+  #def("Continuous Feedback")[
+    Practice of feeding insights from the Operate and Monitor stages (incidents, metrics, usage data) back into Planning, closing the DevOps loop so each cycle informs the next\
+    Operate → Monitor → Plan
+  ]
+
+  == Platform Engineering
+
+  #def("Platform Engineering")[
+    A cultural mindset focused on designing, building, and operating internal developer platforms (IDPs) - essentially treating infrastructure/tooling as a product for internal developers to use.
+  ]
+
+  #strategy-list(
+    title: "Core Responsibilities",
+    (
+      ("Enable self-service", "Let developers provision what they need without filing tickets to Ops"),
+      ("Standardize runtimes & tooling", "Consistent stacks across teams"),
+      ("Abstract infrastructure", "Hide underlying complexity (clouds, clusters, networking) behind simple interfaces"),
+      ("Enforce compliance & security", "Bake policy/guardrails into the platform itself"),
+      ("Provide observability", "Built-in monitoring/logging by default"),
+    ),
+  )
+
+  *Typical Building Blocks* (bottom-up stack)*:*
+  + Compute & Orchestration
+  + Infrastructure as Code
+  + CI/CD Pipelines & Deployment
+  + Package & Artifact Management
+  + Policy & Security
+  + Observability
+  + Cost & Capacity
+  + Self-Service Portal (IDP)
 
   == Key Takeaways
 
   #takeaways((
-    [...],
-    [...],
+    [*DevOps:* Combines software development and IT operations with the goal of continuous delivery of software],
+    [*The DevOps cycle has 8 stages:* Plan, Code, Build, Test, Release, Deploy, Operate, Monitor - forming a continuous infinity loop between Dev and Ops],
+    [*CI/CD terminology maps onto the same cycle:* Continuous Integration, Delivery Deployment, and Feedback are just different groupings of those 8 stages],
+    [*Feedback closes the loop:* Operate and Monitor data flows back into Plan, making the cycle continuous],
+    [*Platform Engineering builds on DevOps:* It packages DevOps stages into a sel-service internal platform so developers don't reinvent CI/CD, IaC, and observability themselves],
+    [*Internal platforms should be treated as products* - built for developer "customers", not run as a ticket-based service desk.],
   ))
 ]
 
