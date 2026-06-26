@@ -118,7 +118,7 @@
       width: 100%,
       fill: light-accent,
       inset: 10pt,
-      radius: 4pt,
+      radius: 2pt,
       stroke: (left: 3pt + accent),
     )[
       #text(weight: "bold", fill: accent)[Learning Objectives]
@@ -186,8 +186,8 @@
   table(
     columns: headers.len(),
     stroke: 0.5pt + gray,
-    fill: (x, y) => if y == 0 { light-accent } else { white },
-    ..headers.map(h => text(weight: "bold")[#h]),
+    fill: (x, y) => if y == 0 { accent } else { if calc.even(y) { light-accent } else { white } },
+    ..headers.map(h => text(fill: white, weight: "bold")[#h]),
     ..rows.pos().flatten()
   )
   v(0.3em)
@@ -252,8 +252,11 @@
       ),
     )
     #v(0.4em)
-    #text(weight: "bold", size: 9.5pt)[Key Activities]
-    #list(..activities.map(a => [#a]), marker: text(fill: accent)[•])
+    #if activities.len() > 0 {
+      text(weight: "bold", size: 9.5pt)[Key Activities]
+      list(..activities.map(a => [#a]), marker: text(fill: accent)[•])
+    }
+
     #if tools.len() > 0 {
       v(0.2em)
       text(weight: "bold", size: 9.5pt)[Tools]
@@ -297,6 +300,33 @@
       ..items.map(((name, desc)) => [#text(weight: "bold")[#name:] #desc]),
       marker: text(fill: accent)[•],
       spacing: 0.6em,
+    )
+  ]
+  v(0.3em)
+}
+
+// Pros/cons comparison box — two columns, each with its own marker color.
+// `pros` and `cons` are arrays of short text items.
+#let pros-cons(pros: (), cons: ()) = {
+  block(
+    width: 100%,
+    fill: light-accent,
+    inset: 10pt,
+    radius: 4pt,
+  )[
+    #grid(
+      columns: (1fr, 1fr),
+      column-gutter: 16pt,
+      [
+        #text(weight: "bold", fill: rgb("#2E7D32"))[+ Pros]
+        #v(0.4em)
+        #list(..pros.map(p => [#p]), marker: text(fill: rgb("#2E7D32"))[•], spacing: 0.5em)
+      ],
+      [
+        #text(weight: "bold", fill: rgb("#C62828"))[− Cons]
+        #v(0.4em)
+        #list(..cons.map(c => [#c]), marker: text(fill: rgb("#C62828"))[•], spacing: 0.5em)
+      ],
     )
   ]
   v(0.3em)

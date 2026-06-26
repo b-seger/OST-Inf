@@ -278,23 +278,160 @@
     "Understand the different testing strategies",
   ),
 )[
-
-  == GitLab CI Pipeline Basics
-
-  #cmd[
-    ```yaml
-    stages:
-      - build
-      - test
-      - deploy
-    ```
+  #def("CI/CD pipeline")[
+    A series of automated steps that helps software teams deliver code faster, safer and more reliably. CI/CD Pipelines are an essential part of continuous integration and deployment and are critical for modern software development.
   ]
 
-  #note[Add the `.gitlab-ci.yml` structure, stages, jobs, runners here.]
+  === Benefits
+  - Faster feedback loops lead to higher quality
+  - Reduce manual effort and therefore also human errors
+  - Lead to consistent environments, "works on my machine" disappears
+  - Parallel jobs allow for scalability in order to process many commits without extra manual effort
+  - Logged pipeline outputs provide traceability for audits
+  - Increase efficiency and save costs
+  - *Enables continuous delivery and deployment*
+
+  == Concepts
+  #compare-table(
+    ([Concept], [Purpose]),
+    ([Stages], [Logical grouping of jobs]),
+    ([Jobs], [Atomic units of work that run inside a stage]),
+    ([Steps], [Individual commands/scripts that a job executes]),
+    ([Rules], [Controls when a job runs]),
+    ([Services], [Auxiliary containers/services that run alongside a job (databases, Docker-in-Docker, APIs)]),
+    ([Runners], [Compute resources that execute jobs (also agents or executers)]),
+    ([Caches], [Temporary storage that speeds up repeated work (dependency downloads, compiled objects)]),
+    ([Artifacts], [Files produced by a job that are persisted for later stages or for download]),
+    ([Registries], [Stores for built images or packages (Docker Hub, GitLab Container Registry)]),
+    (
+      [Variables],
+      [Secrets are key-value pairs (plain or masked) injected into jobs for configuration or credentials],
+    ),
+  )
+
+  #pagebreak()
+
+  == GitLab CI Pipeline Basics
+  === Typical Stages
+  #stage(
+    number: 0,
+    name: "Git commit triggers the pipeline",
+  )
+
+  #stage(
+    number: 1,
+    name: "Build",
+    activities: (
+      "Compile code",
+      "Create container images",
+      "Run unit, integration, security and performance tests",
+    ),
+  )
+
+  #stage(
+    number: 2,
+    name: "Test",
+    activities: (
+      "Run unit, integration, security and performance tests",
+    ),
+  )
+
+  #stage(
+    number: 3,
+    name: "Release",
+    activities: (
+      "Publish artifacts to a registry",
+    ),
+  )
+
+  #stage(
+    number: 4,
+    name: "Deploy",
+    activities: (
+      "Push the artifact to a target environment (staging, production",
+    ),
+  )
+
+  #stage(
+    number: 5,
+    name: "Post-Deploy (optional)",
+    activities: (
+      "Smoke tests, health checks, notifications, roll-back on failures",
+    ),
+  )
+
+  #pagebreak()
+
+  #compare-table(
+    ([Concept], [GitLab keyword], [Example]),
+    ([Stages], [```bash stages ```], [```bash stages: [build, test, deploy]```]),
+    ([Jobs], [top-level key], [```bash job_name: { stage:, script: [...] }```]),
+    ([Steps], [```bash script ```], [```bash script: ["cmd1", "cmd2"] ```]),
+    ([Rules], [```bash rules ```/```bash  only ```/```bash  except ```], [```bash rules: [{if: ..., when: ...}] ```]),
+    ([Services], [```bash services ```], [```bash services: [{name: "postgres:15", alias: "db"}] ```]),
+  )
+
+  #def("Environments")[
+    Describe where code is deployed (Review / Staging / Production / etc.), They can link to a Kubernetes cluster and are declared in the gitlab-ci.yml or the GitLab UI.
+
+    #cmd(```bash
+    setup-review:
+    stage: deploy
+    image: alpine/curl:latest
+    script:
+      - echo "setup review environment for MR ${CI_MERGE_REQUEST_IID}"
+    environment:
+      name: review/$CI_COMMIT_REF_SLUG
+      url: https://${DEV_DOMAIN_NAME}
+      on_stop: stop_review
+    rules:
+      - if: $CI_MERGE_REQUEST_ID
+        when: manual```)
+
+    - ```bash environment.name ``` — dynamically named per merge request using ```bash $CI_COMMIT_REF_SLUG```, so each MR gets its own review environment
+    - ```bash environment.url ``` — the link GitLab shows in the MR/pipeline UI to jump straight to that environment
+    - ```bash environment.on_stop ``` — references another job (stop_review) that tears down the environment when it's no longer needed
+    - ```bash rules ``` — this job only runs (manually) when triggered from a merge request
+  ]
+
+  #def(
+    "Runners",
+  )[A worker that executes pipeline jobs that can be run in:
+    - Local shell
+    - Via SSH
+    - Virtualized wit Parallels/Virtualbox
+    - Docker (Autoscaler)
+    - Kubernetes
+
+    A dedicated runner is set up by installing ```bash gitlab-runner``` and registering it to the project via a registration token.
+
+    #compare-table(
+      ([Type], [Scope], [Registered/managed by]),
+      ([Instance runner], [Available to all projects/groups on the GitLab instance], [GitLab admin]),
+      (
+        [Group runner],
+        [Available to all projects within a specific group (and its subgroups)],
+        [Group owner/maintainer],
+      ),
+      (
+        [Project runner],
+        [Dedicated to one specific project (can be shared with select other projects)],
+        [Project maintainer],
+      ),
+    )
+
+    A runner is picked by a job via ```bash tags``` advertised by each runner, regardless of whether that runner is instance-, group-, or project-scoped.
+  ]
+
+
 
   #takeaways((
-    [...],
+    [Pipeline = stages → jobs → scripts, triggered by git events (push, merge request, tag)],
+    [Typical stages: Build → Test → Release → Deploy → Post-Deploy (optional)],
+    [Runners execute the jobs: Can be dedicated to a group/project or instance runners, available to the entire GitLab instance],
+    [Environments track where code is deployed],
   ))
+
 ]
 
 // ===========================================================================
