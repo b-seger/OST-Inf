@@ -185,6 +185,7 @@
     ),
   )
 
+
   - *Dev side*: Plan → Code → Build → Test
   - *Ops side*: Deploy → Operate → Monitor
   - *Release* is the bridge connecting both halves
@@ -453,8 +454,390 @@
     files, rather than manual configuration.
   ]
 
+  === Benefits
+  - Enables Automation
+  - Drift detection
+  - Repeatability/idempotency - same code produces the same result
+  - Source of truth via state file
+  - Team collaboration via remote backends + locking
+
+  == Imperative vs. Declarative
+  #compare-table(
+    ([], [Imperative (procedural)], [Declarative (desired-state)]),
+    ([*Focus*], [How to achieve a result], [What the result should look like]),
+    ([*Control flow*], [Explicit], [Implicit]),
+    ([*State/idempotency*], [Usually stateless, not idempotent], [Usually stateful and idempotent]),
+  )
+
+  == Terraform/OpenTofu
+
+  #def("Terraform")[
+    A Open-Source infrastructure as code engine written in GO, created and owned by HashiCorp. It uses the HashiCorp Configuration Language (HCL).
+  ]
+
+  #def("OpenTofu")[
+    A Fork of Terraform v1.5.7, under the Linux Foundations stewardship. It is a Drop-in replacement and has feature parity with Terraform. It includes additional features like local state encryption.
+  ]
+
+  #pagebreak()
+
+  === HCL & File Conventions
+
+  #def("HCL")[
+    Human-readable language used to write Terraform files.
+
+    - *Declarative*: you describe the final state you want, not the steps to get there
+    - *Blocks & Arguments*: structure uses ```bash { }``` for blocks, ```bash key = "value"``` for settings
+    - *Logic-Lite*: Supports simple loops, conditionals, and functions (e.g. ```bash count``` or ```bash for_each```)
+    - *Machine-Friendly*: optimized for both human editing and automated API processing
+    - *File handling*: files end in ```bash .tf```, and Terraform loads every ```bash .tf``` file in the working directory
+  ]
+
+  The terraform block is a mandatory bootstrapping block, it tells Terraform which version it needs and which providers (and versions) to fetch during init:
+  #cmd(
+    ```bash
+    terraform {
+      required_version = ">= 1.0.0"
+      required_providers {
+        aws = {
+          source  = "hashicorp/aws"
+          version = "~> 3.68.0"
+        }
+      }
+    }
+    ```,
+  )
+
+  === File Naming Best Practices
+  #compare-table(
+    ([Filename], [Purpose]),
+    ([terraform.tf], [required_version + required_providers]),
+    ([backend.tf], [remote state config (kept separate from versioning)]),
+    ([providers.tf], [auth/config for your specific providers]),
+    ([main.tf], [primary workspace — resource and data source blocks]),
+    ([variables.tf], [input definitions (kept in alphabetical order)]),
+    ([outputs.tf], [return values for other modules/CLI (alphabetical order)]),
+    ([locals.tf], [derived/computed local values]),
+    ([override.tf], [special-use overrides — loaded last; use sparingly, with comments]),
+  )
+
+  === Terraform Core Concepts
+  #def("Providers")[
+    - *API bridges* that translate Terraform/HCL into specific cloud API calls
+    - Define the *resource mapping*: which "building blocks" (VMs, databases, networks) are available
+    - *Multi-Platform*: Connects to AWS, Azure, Google Cloud, SaaS tools, or even local hardware
+    - *State-aware*: checks if real world infrastructure matches code
+    - Handle *authentication/credentials* to the backend service
+    - *You cannot use Terraform without one, every* ```bash .tf``` *config needs at leas one provider block*
+
+    #cmd[
+      ```bash
+        provider "aws" {
+        access_key = var.aws_access_key
+        secret_key = var.aws_secret_key
+        region     = "us-east-1"
+        }
+      ```
+    ]
+  ]
+
+  #def("Resources")[
+    - Specific infrastructure objects (VMs, DBs, Networks)
+    - Declares what you want to create or manage
+    - *Goal*: Represents the desired final state of a component
+    - *Example* - Create an EC2 instance in AWS:
+    #cmd[
+      ```bash
+        resource "aws_instance" "web" {
+          ami           = "ami-0123456789abcdef0"
+          instance_type = "t3.micro"
+
+          tags = {
+            Name = "web-server"
+          }
+        }
+      ```
+    ]
+  ]
+
+  #def("Data")[
+    - Fetches information from existing infrastructure
+    - *External Reference*: uses data not managed by the current code
+    - Data Lookup:
+      #cmd[
+        ```bash
+        data "aws_ami" "ubuntu" {
+          most_recent = true
+
+          filter {
+            name   = "name"
+            values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+          }
+
+          filter {
+            name   = "virtualization-type"
+            values = ["hvm"]
+          }
+
+          owners = ["099720109477"]  # Canonical
+        }
+        ```
+      ]
+
+    - Data Usage:
+      #cmd[
+        ```bash
+        # ── Look up an AMI by criteria ──
+        data "aws_ami" "ubuntu" {
+          # ...
+        }
+
+        # ── Defining resources ──
+        resource "aws_instance" "example" {
+          ami           = data.aws_ami.ubuntu.id   # <- pulled straight from the data source
+          instance_type = "t2.micro"
+          # ...
+        }
+
+        # ── Output useful ids ──
+        output "ami_id" {
+          value       = data.aws_ami.ubuntu.id
+          description = "The image ID we interrogated for Ubuntu AMI"
+        }
+        ```
+      ]
+
+  ]
+
+  #def("Variables")[
+    - Dynamic values provided at runtime
+    - Makes configurations flexible without changing code
+    - Keeps secrets and environment-specific data separate
+
+    #cmd[
+      ```bash
+      variable "aws_access_key" {
+        type        = string
+        description = "AWS access key, supply via TF_VAR_aws_access_key"
+        sensitive   = true
+        # no default -> Terraform prompts interactively if not set
+      }
+
+      variable "instance_type" {
+        type    = string
+        default = "t3.micro"
+      }
+
+      # Override variable at runtime:
+      # terraform apply -var="port=8081"
+
+      # Provided as environment variable in the shell:
+      # export TF_VAR_aws_access_key="AKIA..."
+      # export TF_VAR_aws_secret_key="..."
+      ```
+    ]
+  ]
+
+  #def("Outputs")[
+    - Data displayed after a successful ```bash apply```
+    - *Information sharing*: passes values (like an IP address) to the user or to other modules
+    - *Visibility*: surfaces critical resource attributes directly in the CLI output
+    #cmd[
+      ```bash
+      output "instance_public_ip" {
+        value       = aws_instance.web.public_ip
+        description = "Public IP of the web server"
+      }
+      ```
+    ]
+  ]
+
+  #def("References")[
+    - Connects blocks of code together
+    - *Dependency mapping*: tells Terraform what to build first
+    - Implicit by default, but can be forced explicit with ```bash depends_on```
+    - *Attribute access*: pulls a value (like an IP) from one resource into another
+    - *Consistency*: if a source value changes, everything referencing it updates automatically
+
+    #cmd[
+      ```bash
+      resource "aws_eip" "web_ip" {
+        instance = aws_instance.web.id   # implicit reference -> implicit dependency
+
+        depends_on = [aws_instance.web]  # explicit dependency (rarely needed; usually automatic)
+      }
+      ```
+    ]
+
+  ]
+
+  #def("Modules")[
+    - Containers for grouping multiple resources together
+    - A reusable, parameterized bundle of Terraform config
+    - Allows for standardization, enforcing best practices across an organization
+
+    #cmd[
+      ```bash
+      module "web_server" {
+        source        = "./modules/ec2-instance"
+        instance_type = var.instance_type
+        ami           = "ami-0123456789abcdef0"
+      }
+      ```
+    ]
+  ]
+
+
+  === The State File
+
+  #def("State")[
+    *The Source of Truth*
+    - A JSON file mapping your code to real-world resource IDs
+    - Default stored in ```bash terraform.tfstate```
+    - It has two Jobs:
+      - *Performance* - lets Terraform "remember" what it built previously, so it doesn't have to rediscover everything from scratch
+      - *Drift detection* - catches when someone manually changed a setting in the console
+  ]
+
+  The First time you run ```bash terraform apply```, terraform notices there is no state file, it updates the cloud (creates the resources) and creates the ```bash .tfstate file as a byproduct```
+  - Flow: ```bash HCL → plan → apply → cloud → update .tfstate```
+
+  #pagebreak()
+  Every subsequent apply is a 3-way comparison:
+
+  #figure(
+    image("resources/terraform_state_3way_diff.svg", width: 80%),
+    caption: [Terraform 3-way Diff],
+  )
+
+  + NEW — Terraform reads your current script
+  + EXISTING — Terraform reaches out to the cloud (```bash refresh```) to see what's actually provisioned right now
+  + PREVIOUS — Terraform reads the ```bash .tfstate``` file from the last run
+  Terraform reconciles all three to build a full picture of the situation, then decides what action to take (create/update/destroy/no-op per resource)
+
+  #pagebreak()
+
+  *Example State File*:
+  - The terraform resource is the existing desired state in the script
+  - The arn is used to check the cloud and see if anything has changed
+  #cmd(
+    ```bash
+    {
+      "version": 4,
+      "terraform_version": "0.15.1",
+      "serial": 4,
+      "lineage": "672708eb-8c19-0463-9eb0-81e20b008a9d",
+      "outputs": {},
+      "resources": [
+        {
+          "mode": "managed",
+          "type": "aws_instance",
+          "name": "exercise_0020",
+          "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+          "instances": [
+            {
+              "schema_version": 1,
+              "attributes": {
+                "ami": "ami-...",
+                "arn": "arn:aws:ec2:us-east-1:641995674308:instance/i-0f5f630af308f2516",
+                # truncated for brevity
+                "vpc_security_group_ids": [
+                  "sg-02447ae77b0fda694",
+                  "sg-02a4ff78bfae29ce2"
+                ]
+              },
+              "dependencies": [
+                "aws_security_group.sec_http",
+                "aws_security_group.sec_ssh"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    ```,
+  )
+
+
+  === Backends: Team Collaboration
+
+  By default, the state file is local. This works fine in a solo environment, to work in teams, the state file should be shared. Terraform supports storing the state in a third party, for example in Amazon S3.
+
+  *Sequence per* ```bash apply```:
+  + Acquire lock
+  + Fetch ```bash terraform.tfstate``` from S3
+  + Update the cloud with the desired changes
+  + Send the updated ```bash terraform.tfstate``` back to S3
+
+  *Locking rule*: if two users run ```bash apply``` simultaneously, whoever grabs the lock first wins
+
+  #pagebreak()
+  *Using the Bucket*:
+
+  Like a forwarding address you put at the top of your project, telling Terraform: "don't keep your memory (state) on this laptop — keep it over there instead."
+  #cmd(
+    ```bash
+    terraform {
+      backend "s3" {
+        bucket       = "bucket-name"
+        key          = "backend/terraform.tfstate"
+        region       = "us-east-1"
+        use_lockfile = true
+      }
+    }
+    ```,
+  )
+
+
+  *Creating the bucket*:
+
+  An ordinary resource block — "create an S3 bucket," then "turn on versioning for that bucket".
+  #cmd(
+    ```bash
+    resource "aws_s3_bucket" "backend" {
+      bucket = "bucket-name"
+    }
+
+    resource "aws_s3_bucket_versioning" "backend" {
+      bucket = aws_s3_bucket.backend.id
+      versioning_configuration {
+        status = "Enabled"
+      }
+    }
+    ```,
+  )
+
+  #important[Locking via ```bash dynamodb_table = "tfstate_lock"``` is deprecated]
+
+  *Best practices*:
+  - One folder per environment (dev/, prod/, base/, modules/)
+  - Each folder gets its own state file — never mix state across environments
+    - Blast radius containment
+
+
+  === Terraform Workflow & Provisioners
+
+  #def("Provisioners")[
+    Plugins that run scripts on a resource after it's been created, for post-creation setup. As opposed to providers, which create the resource in the first place.
+
+    Common types: remote-exec (runs commands on the remote resource), local-exec (runs commands on the machine running Terraform).
+  ]
+
+  #figure(
+    image("resources/terraform-workflow.svg", width: 80%),
+    caption: [Terraform 3-way Diff],
+  )
+
   #takeaways((
-    [...],
+    [IaC replaces manual provisioning with code],
+    [Terraform is declarative, not imperative],
+    [The toolchain has four named components — language, state, provisioner, backend],
+    [Providers are the bridge to the real world],
+    [Resources declare what you want; data sources read what already exists],
+    [State is the mechanism that makes drift detection possible],
+    [Backends solve the team-collaboration problem state creates],
+    [Modules exist for reusability and standardization],
+    [Workflow: Write HCL → init → plan → apply → destroy -  with plan being read-only (preview) and apply being the only step that actually changes anything ],
   ))
 ]
 
@@ -472,14 +855,331 @@
   ),
 )[
 
+  #def("Configuration Management ")[
+    - Comes after infrastructure provisioning in the workflow
+    - Centrally modifies base configurations
+    - Rolls out new settings to all applicable systems
+    - Automates system identification, patching, and updates
+    - Identifies outdated, poorly performing, and noncompliant configurations
+    - Example scope: server configuration of packages / users / services
+  ]
+
+  == What is Ansible?
+
+  #def("Ansible")[
+    An IT Automation tool that:
+    - Configures systems
+    - Deploys software
+    - Orchestrates more advanced IT tasks
+      - continuous deployments
+      - zero downtime rolling updates
+
+    *Use cases*: Configuration Management, Security & Compliance
+  ]
+
+  === Terraform vs. Ansible
   #compare-table(
-    ([Tool], [Type], [Language]),
-    ([Ansible], [Agentless, push-based], [YAML]),
-    ([...], [...], [...]),
+    ([], [Imperative (procedural)], [Declarative (desired-state)]),
+    ([*Primary role*], [Provisioning], [Configuration Management]),
+    ([*Paradigm*], [Declarative], [Hybrid]),
+    ([*Lifecycle*], [Has state/lifecycle], [No Lifecycle]),
+    ([*Idempotency*], [Idempotent], [Idempotency optional]),
   )
 
+  #pagebreak()
+
+  == Ansible Architecture & Connection Model
+  - *Control node*: where Ansible runs (the "management node")
+  - *Managed nodes*: target hosts
+  - Connections happen via
+    - *localhost* (local connection)
+    - *SSH* (Linux/Unix hosts)
+    - *WinRM* (Windows hosts)
+  - No agent required on managed nodes (agentless)
+
+  === Inventory
+  - File listing hosts and variables Ansible will operate on
+  - Two supported formats: *INI* or *YAML*
+  Example YAML:
+  #cmd(
+    ```bash
+        --
+    all:
+      hosts:
+        r1:
+          ansible_host: 192.168.1.10
+        r2:
+          ansible_host: 192.168.1.11
+        sw1:
+          ansible_host: 192.168.1.20
+        sw2:
+          ansible_host: 192.168.1.21
+      children:
+        router:
+          r1:
+          r2:
+        switches:
+          sw1:
+          sw2:
+      vars:
+        ansible_user: cisco
+        ansible_ssh_pass: cisco
+    ```,
+  )
+
+  Example INI:
+  #cmd(
+    ```bash
+    [router]
+    r1 ansible_host=192.168.1.10
+    [switches]
+    sw1 ansible_host=192.168.1.20
+    [all:vars]
+    ansible_user=cisco
+    ```,
+  )
+
+  *Ad-hoc commands* (one-off, non-playbook execution):
+  #cmd(
+    ```bash
+    $ ansible [pattern] -m [module] -a "[module options]"
+    $ ansible webservers -m ansible.builtin.file -a "dest=/srv/foo/a.txt mode=600"
+    ```,
+  )
+  - Default module (if -m omitted) is command
+  - Can target multiple groups: ```bash ansible nodes:webservers -a "shutdown -h now" --become```
+
+  #pagebreak()
+
+  == Plays & Playbooks
+  - *Task*: individual unit of work (e.g. install a package, copy a file)
+  - *Play*: one or more tasks run in order, defines which hosts to run on. Hosts that fail a task are removed from the rest of the play.
+  - *Playbook*: a single YAML file containing one or more plays
+
+  #cmd(
+    ```bash
+    - name: Configure Web Server
+      hosts: web_servers
+      tasks:
+        - name: Install Nginx
+          apt:
+            name: nginx
+            state: present
+        - name: Copy website files
+          copy:
+            src: /local/path/
+            dest: /var/www/html/
+    ```,
+  )
+  == Core Constructs
+
+  #def("Facts")[
+    - Automatically collected info about hosts when a playbook runs ("Gathering Facts," via the ```bash setup``` module)
+    - Stored in ```bash ansible_facts``` variable
+    - Can be disabled with ```bash gather_facts```: no for performance/when not needed
+  ]
+
+  #def("Conditionals")[
+    - ```bash when:``` clause uses raw Jinja2 expressions
+    - Can branch on facts, registered variables, or regular variables
+    - Example pattern: register a command's exit code, then gate a later task on it:
+
+    #cmd(
+      ```bash
+      - name: Check if already present
+        command: which docker
+        failed_when: false
+        changed_when: false
+        register: docker_available
+
+      - name: Download install script
+        get_url:
+          url: https://get.docker.com/
+          dest: /tmp/get-docker.sh
+        when: docker_available.rc == 1
+      ```,
+    )
+  ]
+
+  #def("Loops")[
+    - Useful for creating multiple users, installing multiple packages, or repeating a polling step
+    - Example:
+    #cmd(
+      ```bash
+      - name: add several users
+        user:
+          name: "{{ item.name }}"
+          groups: "{{ item.groups }}"
+        loop:
+          - { name: 'testuser1', groups: 'wheel' }
+          - { name: 'testuser2', groups: 'root' }
+      ```,
+    )
+
+    #important("Some Plugins can take lists as options - better than looping")
+  ]
+
+  #def("Handlers")[
+    - A task triggered by another task — but only if the triggering task reported a change AND all other tasks succeeded
+      - Not run if the triggering task results in "OK" (no change)
+    - Run after all other tasks complete successfully; skipped entirely if an earlier task fails
+    - Related flags: ```bash ignore_errors``` (continue play despite error), ```bash force_handlers``` (run handlers even if some tasks failed)
+  ]
+
+  #def("Ansible Vault (secrets)")[
+    - Encrypts sensitive data (passwords, keys) so they aren't stored in plaintext in playbooks/roles
+    - Vault files can safely be committed to source control
+    - CLI commands: ```bash ansible-vault create```, ```bash edit```, ```bash view```, ```bash encrypt_string```
+    - Password supply methods: file, interactive prompt (```bash @prompt```), or a secret-manager script (```bash vault-keyring-client.py```)
+    - Usage pattern: reference ```bash vars_files: [vault.yml]``` in the playbook, consume encrypted vars via Jinja2 (```bash {{ username }}```)
+  ]
+
+  == Templating (Jinja2)
+  - Ansible uses Jinja2 for dynamic expressions/variables
+  - *Templating happens on the controller*, not the managed node — only the resolved result is sent to the target
+
+  *Mechanism*: the ```bash template:``` module takes a ```bash .j2``` source file (```bash src:```) and writes the rendered output to a destination path (```bash dest:```) on the target.
+
+  *Example*:
+
+  ```bash playbook.yml```:
+  #cmd(
+    ```bash
+    - hosts: localhost
+      vars:
+        cars: [Porsche, Tesla, Ferrari, Dacia, Citroen, Volvo, Saab]
+      tasks:
+        - name: template looping example
+          template:
+            src: template.j2
+            dest: thecars.txt
+    ```,
+  )
+
+  ```bash template.j2```:
+  #cmd(
+    ```bash
+    My Template Cars are
+    {% for item in cars %}
+    {{ item }}
+    {% endfor %}
+    ```,
+  )
+
+  Rendered ```bash thecars.txt```:
+  #cmd(
+    ```
+    My Template Cars are
+    Porsche
+    Tesla
+    Ferrari
+    Dacia
+    Citroen
+    Volvo
+    Saab
+    ```,
+  )
+
+  === Filters
+  - Filters transform data inside a template expression — syntax is {{ value | filter }}
+
+  #cmd(
+    ```
+    {{ list | min }}                  {# minimum value from a list #}
+    {{ [3, 4, 2] | max }}             {# maximum value from a list #}
+    {{ ['a', 'b', 'c'] | shuffle }}   {# => ['b', 'c', 'a'] randomize list order #}
+    {{ ipvar | ipaddr }}              {# test if string is a valid IP #}
+    {{ ipvar | ipv4 }}
+    {{ ipvar | ipv6 }}                {# test IP protocol version #}
+    {{ 'test1' | hash('sha1') }}      {# get sha1 hash of a string #}
+    ```,
+  )
+
+  == Tags
+  - Attribute settable on plays, roles, or tasks
+  - Lets you run a subset of a playbook instead of the whole thing
+  - Tags on a play/static import are inherited by included tasks
+  - Two special reserved tags:
+    - ```bash always``` — runs unless explicitly skipped with ```bash --skip-tags=always```
+    - ```bash never``` — does NOT run unless explicitly requested with ```bash --tags=never```
+
+  Useful CLI: ansible-playbook playbook.yml --list-tasks (shows which tags apply to which tasks)
+
+  #cmd(
+    ```bash
+    # playbook.yml
+    ---
+    - hosts: local
+      tags:
+        -docker
+      tasks:
+        -name: Install docker
+    ```,
+  )
+
+  #cmd(
+    ```bash
+    $ ansible-playbook playbook.yml--list-tasks
+    playbook: playbook.yml
+
+      play #1 (local): local        TAGS: [docker]
+        tasks:
+          Install docker    TAGS: [docker]
+    ```,
+  )
+
+  == Collections & Roles
+  #def("Collections")[
+    - Modules are being packaged into Collections (e.g. ```bash cisco.ios.ios_banner``` instead of bare ```bash ios_banner```)
+    - Installed via ```bash ansible-galaxy collection install <name>```
+    - Found on Ansible Galaxy (public, free) or Automation Hub (RedHat-account-gated, certified collections)
+    - Dependencies declared in a ```bash requirements.yml```, listing both collections and roles, installed in one go
+  ]
+
+  #def("Roles")[
+    - A level of abstraction above tasks/playbooks → reusability
+    - Breaks a complex playbook into smaller, self-contained chunks
+    - Created via ```bash ansible-galaxy init <name>```, which scaffolds a standard directory structure:
+
+    #cmd(
+      ```bash
+      cldop/
+        ├── defaults/main.yml
+        ├── files/
+        ├── handlers/main.yml
+        ├── meta/main.yml
+        ├── tasks/main.yml
+        ├── templates/
+        ├── tests/
+        └── vars/main.yml
+      ```,
+    )
+
+    - Used in a playbook via the roles: key instead of tasks:
+  ]
+
+  == Best Practices
+  + Use roles to group related tasks
+  + Use Ansible Galaxy — don't reinvent the wheel; reuse and share roles
+  + Don't use ```bash ignore_errors``` — it swallows all errors indiscriminately and can leave hosts in a broken/unstable state; use Ansible's built-in error-handling constructs instead (e.g. ```bash failed_when```, ```bash register``` + ```bash when```)
+  + Use Vault for secrets/sensitive data
+  + Use git — centralize and version playbooks for the whole team; even secrets can go in git if Vault-protected
+  + Be pragmatic, not clever — reduce complexity, keep it simple:
+    - Avoid regex where possible
+    - If missing facts, consider adding custom ones
+    - Use templates
+    - Use tags
+    - Use includes/imports rather than one giant 1000-line playbook
+  #pagebreak()
+
   #takeaways((
-    [...],
+    [Configuration management happens after infrastructure provisioning],
+    [Ansible is agentless],
+    [Templating (Jinja2) runs on the controller, not the target],
+    [Handlers only fire on change — they're not run if a task reports "OK"],
+    [Roles and Collections exist for reusability — don't write everything from scratch],
+    [Secrets belong in Vault, not plaintext — encrypted Vault files can safely live in git],
+    [```bash ignore_errors``` is a trap, not a fix — it suppresses all failures indiscriminately and risks leaving hosts in a broken state],
   ))
 ]
 

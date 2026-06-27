@@ -1,0 +1,65 @@
+<svg width="1600" height="600" viewBox="0 0 1600 600" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- User -->
+  <rect x="40" y="230" width="160" height="90" rx="14" fill="#F1EFE8" stroke="#888780" stroke-width="1.5"/>
+  <text x="120" y="280" text-anchor="middle" font-size="20" font-weight="700" fill="#2C2C2A">User</text>
+
+  <!-- Connector: User -> manifest files -->
+  <line x1="200" y1="275" x2="278" y2="275" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Terraform manifest files -->
+  <rect x="280" y="220" width="220" height="110" rx="14" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
+  <text x="390" y="270" text-anchor="middle" font-size="20" font-weight="700" fill="#26215C">Terraform</text>
+  <text x="390" y="296" text-anchor="middle" font-size="20" font-weight="700" fill="#26215C">manifest files</text>
+  <text x="390" y="318" text-anchor="middle" font-size="15" fill="#534AB7">(.tf)</text>
+
+  <!-- Connector: manifest files -> dashed container (into Terraform core) -->
+  <path d="M500 275 L560 275 L560 150 L640 150" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Dashed container around core + plugins -->
+  <rect x="640" y="40" width="510" height="490" rx="14" fill="none" stroke="#9c9a92" stroke-width="1.6" stroke-dasharray="8 7"/>
+
+  <!-- Terraform core -->
+  <rect x="730" y="90" width="240" height="100" rx="14" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/>
+  <text x="850" y="148" text-anchor="middle" font-size="22" font-weight="700" fill="#042C53">Terraform core</text>
+
+  <!-- Connector: core -> plugins label/box (down) -->
+  <line x1="850" y1="190" x2="850" y2="248" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Plugins label -->
+  <text x="850" y="280" text-anchor="middle" font-size="18" fill="#5F5E5A">Plugins</text>
+
+  <!-- Providers box -->
+  <rect x="700" y="300" width="300" height="100" rx="14" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+  <text x="850" y="340" text-anchor="middle" font-size="19" font-weight="700" fill="#412402">Providers</text>
+  <text x="850" y="368" text-anchor="middle" font-size="14" fill="#854F0B">Azure, GCP, AWS, VMware, etc.</text>
+
+  <!-- Provisioners box -->
+  <rect x="700" y="420" width="300" height="100" rx="14" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+  <text x="850" y="460" text-anchor="middle" font-size="19" font-weight="700" fill="#412402">Provisioners</text>
+  <text x="850" y="488" text-anchor="middle" font-size="14" fill="#854F0B">Remote-exec, local-exec, etc.</text>
+
+  <!-- Connector: core -> State file (right, then down, then right into box) -->
+  <path d="M970 140 L1110 140 L1110 230" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- State file -->
+  <rect x="1010" y="232" width="200" height="100" rx="14" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+  <text x="1110" y="275" text-anchor="middle" font-size="19" font-weight="700" fill="#04342C">State file</text>
+  <text x="1110" y="303" text-anchor="middle" font-size="15" fill="#0F6E56">(.tfstate)</text>
+
+  <!-- Connector: State file -> Cloud service providers -->
+  <line x1="1210" y1="282" x2="1330" y2="282" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Cloud service providers -->
+  <rect x="1330" y="120" width="220" height="220" rx="14" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/>
+  <text x="1440" y="170" text-anchor="middle" font-size="19" font-weight="700" fill="#4A1B0C">Cloud service</text>
+  <text x="1440" y="196" text-anchor="middle" font-size="19" font-weight="700" fill="#4A1B0C">providers</text>
+  <text x="1440" y="232" text-anchor="middle" font-size="15" fill="#993C1D">AWS</text>
+  <text x="1440" y="258" text-anchor="middle" font-size="15" fill="#993C1D">Azure</text>
+  <text x="1440" y="284" text-anchor="middle" font-size="15" fill="#993C1D">GCP</text>
+</svg>

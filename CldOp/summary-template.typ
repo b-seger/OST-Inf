@@ -157,7 +157,7 @@
     inset: 8pt,
     radius: 3pt,
   )[
-    #text(weight: "bold", fill: rgb("#B8791F"))[⚠ Exam-relevant: ] #body
+    #text(weight: "bold", fill: rgb("#B8791F"))[⚠ Important: ] #body
   ]
   v(0.3em)
 }
@@ -326,6 +326,32 @@
         #text(weight: "bold", fill: rgb("#C62828"))[− Cons]
         #v(0.4em)
         #list(..cons.map(c => [#c]), marker: text(fill: rgb("#C62828"))[•], spacing: 0.5em)
+      ],
+    )
+  ]
+  v(0.3em)
+}
+
+
+#let comparison(title1, title2, comp1: (), comp2: ()) = {
+  block(
+    width: 100%,
+    fill: light-accent,
+    inset: 10pt,
+    radius: 4pt,
+  )[
+    #grid(
+      columns: (1fr, 1fr),
+      column-gutter: 16pt,
+      [
+        #text(weight: "bold")[#title1]
+        #v(0.4em)
+        #list(..comp1.map(p => [#p]), marker: text()[•], spacing: 0.5em)
+      ],
+      [
+        #text(weight: "bold")[#title2]
+        #v(0.4em)
+        #list(..comp2.map(c => [#c]), marker: text()[•], spacing: 0.5em)
       ],
     )
   ]
