@@ -1195,16 +1195,315 @@
     "Understand how to view the history of changes to objects, rollback to previous versions if necessary, and ensure reliable management of object configurations over time",
   ),
 )[
-
-  #cmd[
-    ```bash
-    kubectl apply -f deployment.yaml
-    kubectl get pods -n namespace
-    ```
+  == Foundations
+  #def("Kubernetes")[
+    Kubernetes, also known as K8s, is an open source system for automating deployment, scaling,
+    and management of containerized applications.
   ]
 
+  #figure(
+    image("resources/Kubernetes_Architecture.png", width: 80%),
+    caption: [Kubernetes Architecture Overview],
+  )
+
+  #def("Objects")[
+    Persistent entities representing a "record of intent", the desired state of the cluster. Defined declaratively, typically via .yaml manifests.
+  ]
+
+  #def("Controllers")[
+    Track a resource type, compare desired vs. current state, and drive the cluster toward the desired state.
+  ]
+
+  #pagebreak()
+
+  == Workloads
+  #compare-table(
+    ([Object], [Role]),
+    ([Pod], [Smallest deployable unit; runs one or more tightly-coupled containers sharing network/storage]),
+    ([Init container], [Runs to completion before the main container starts; blocks main container if it fails]),
+    (
+      [Sidecar container],
+      [Runs concurrently with the main container, independent lifecycle, shares network/storage namespace, supports probe],
+    ),
+    (
+      [ReplicaSet],
+      [Ensures a specified number of pod replicas are running, matched via label selectors
+        #cmd(```bash kubectl scale --replicas=5 rs/app-xy-pod", "Manually scale a ReplicaSet ```)
+      ],
+    ),
+    (
+      [Deployment],
+      [Higher-level object managing ReplicaSets; provides declarative updates, scaling, and update strategies.
+
+        Recommended over raw ReplicaSets unless orchestration is needed],
+    ),
+    (
+      [HorizontalPodAutoscaler (HPA)],
+      [Auto-scales pod replica count based on metrics (CPU/memory via Metrics Server, custom or external); configured with ```bash minReplicas```/```bash maxReplicas```/```bash targetMetric```
+        #cmd(
+          ```bash kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10", "Enable HPA on a Deployment```,
+        )
+      ],
+    ),
+  )
+
+  == kubectl Usage Patterns
+
+  #compare-table(
+    ([], [Imperative], [Declarative]),
+    (
+      [*Approach*],
+      [Create/modify resources directly via CLI commands and flags],
+      [Write manifest files, apply them with ```bash kubectl```],
+    ),
+    ([*Control*], [Less control], [Much more control]),
+    ([*Recommendation*], [Not recommended as primary workflow], [Recommended way to work with ```bash kubectl```]),
+  )
+
+  - Create new resources: #cmd(```bash kubectl create -f nginx.yaml```)
+  - Push settings from a new manifest: #cmd(```bash kubectl replace -f nginx.yaml```)
+  - Apply settings from a manifest: #cmd(```bash kubectl apply -f nginx.yaml```)
+  - Generate YAML quickly: #cmd(```bash kubectl get pods <name> -o yaml --dry-run=client > file.yaml```)
+    - (then clean up status/fields)
+  - Inspect a running pod: #cmd(```bash kubectl exec -it <pod> -- sh```)
+
+  == Managing Deployments & Rolling Updates
+
+  #def("Rolling Update")[
+    The Deployment's task is to ensure enough Pods are always running during an update.
+    The new version is deployed and, once confirmed successful, the old version is taken offline.
+  ]
+
+  #compare-table(
+    ("Strategy", "Behavior", "When to use"),
+    (
+      "Recreate",
+      "All Pods killed, then new Pods created — causes temporary unavailability",
+      "Versions cannot run side by side simultaneously",
+    ),
+    (
+      "RollingUpdate",
+      "Pods replaced one at a time to guarantee availability — the preferred approach",
+      "Default choice; tunable via maxUnavailable / maxSurge",
+    ),
+  )
+
+  #important[
+    *RollingUpdate* options control rollout behavior precisely:
+    - `maxUnavailable`: max number of Pods that can be unavailable at the same time during the update
+    - `maxSurge`: max number of Pods allowed to run *above* the desired replica count during the rollout, to preserve minimum availability
+  ]
+  Get details about recent transactions :
+  #cmd(```bash kubectl rollout history deployment app-xy-deployment```)
+
+  Undo a previous change:
+  #cmd(```bash kubectl rollout undo deployment app-xy-deployment```)
+  == Namespaces & Resource Management
+
+  #def("Namespaces")[
+    Logical isolation within one cluster. Allows Resource Organization of Group related objects (pods, services, configs) and Access Control, enforce RBAC policies per namespace.
+
+    Default namespaces: *default*, *kube-system*, *kube-public*, *kube-node-lease*
+  ]
+
+  #compare-table(
+    ([], [Kubernetes Namespaces], [Linux Namespaces]),
+    ([*Level*], [Orchestration layer (virtual/logical grouping)], [Kernel-level primitive]),
+    ([*Provides*], [Logical isolation within a single cluster], [Actual OS isolation (PID, network, mount, etc.)]),
+    (
+      [*Scope*],
+      [Namespaced resources (Pods, Services) isolated by default; cluster-wide resources (Nodes, PersistentVolumes) shared],
+      [Per-process/container isolation enforced by the kernel],
+    ),
+  )
+
+  === Resource governance
+  - *Requests* = guaranteed minimum for scheduling
+  - *Limits* = hard cap (throttling for CPU, eviction for memory)
+  - *LimitRange* = enforces default min/max per namespace
+  - *ResourceQuota* = caps aggregate consumption per namespace
+
+  #important("Always define both requests and limits to ensure fair sharing and stability.")
+
+  == Managing Scheduling
+
+  #def("Scheduling")[
+    Scheduling makes sure that Pods are matched to Nodes so that kubelet can run them.
+    - The kube-scheduler determines which nodes will run a Pod
+    - Different labels can be used to influence where a node will be scheduled
+    - Other options can also be used to influence Pod scheduling
+      - *nodeName* in the Pod spec: verify which node the Pod should run
+      - *nodeSelector* in labels: specify how to run a Pod
+      - *affinity*, *antiAffinity* or *taints*
+  ]
+
+  === Filtering
+  Eliminates infeasible nodes.
+
+  Different options are used to check if a node is eligible to run the Pod:
+  - *PodFitsHostPorts*: checks if free network ports are available
+  - *PodFitsResources*: checks if the node has sufficient CPU and Memory resources
+  - *PodMatchNodeSelector*: checks if the Pod Node Selector matches the Node labels
+  - *CheckNodeDiskPressure*: checks if a node is reporting a filesystem that is almost full, so that the Pod won't be scheduled there
+  - *CheckVolumeBinding*: Evaluate if the volumes that are requested can be serviced by the node using bound and unbound PVCs
+
+  === Scoring
+  After filtering out nodes, scoring is used to evaluate remaining nodes:
+  - *SelectorSpreadPriority*: spreads Pods across hosts, considering Pods that belong to the same Service, StatefulSet or ReplicaSe
+  - *LeastRequestedPriority*: prioritizes nodes with fewer requested resources
+  - *NodeAffinityPriority*: prioritizes nodes according to node affinity scheduling preferences
+  - Others
+
+  #pagebreak()
+  === Taints and Tolerations
+  *Taints* (on Nodes) repel Pods unless the Pod has a matching *toleration*:
+  - *NoSchedule* — blocks new Pods
+  - *PreferNoSchedule* — avoids scheduling unless no alternative
+  - *NoExecute* — evicts existing Pods too
+  If a Pod has a toleration, it will ignore the taint
+
+  #important("Taints and tolerations have no effect on DaemonSets")
+
+  ```bash kubectl cordon``` / ```bash kubectl uncordon``` — stop new scheduling on a node without evicting existing Pods.
+
+  == Networking
+
+  #def("Services")[
+    Provide stable networking/load balancing for ephemeral Pods via label selectors and a virtual ClusterIP; integrate with readiness probes; support session affinity and traffic subsetting (e.g., blue/green).
+
+    #compare-table(
+      ([Type], [Behavior]),
+      ([*ClusterIP*], [Internal-only access within the cluster (default)]),
+      ([*NodePort*], [Exposes service on each node's IP at a static port]),
+      ([*LoadBalancer*], [Exposes externally using cloud provider's load balancer]),
+      ([*ExternalName*], [Maps service to external DNS name]),
+    )
+  ]
+
+  === Accessing Pods
+  #def("Ingress")[
+    Manage external access to services (HTTP/HTTPS).A single entry point for multiple services.
+
+    Components:
+    - *Ingress Resource*: Defines routing rules
+    - *Ingress Controller*: Implements the rules (Nginx, Traefik, etc.)
+    #comparison(
+      "Features",
+      "Limitations",
+      comp1: (
+        "Host-based routing",
+        "Path-based routing",
+        "SSL/TLS termination",
+        "Load balancing across backend services",
+      ),
+      comp2: (
+        "Limited to L7 HTTP/HTTPS traffic",
+        "Custom implementations vary by controller",
+        "Less flexible for advanced traffic management
+",
+      ),
+    )
+  ]
+
+  #def("GatewayAPI (modern replacement for Ingress)")[
+    Next-generation API for service networking, more expressive and flexible than Ingress.
+
+    Resources:
+    - *Gateway*: Defines the entry point
+    - *HTTPRoute*: Specifies how to route HTTP traffic to services
+    - *TLSRoute*: Specifies how to route HTTPS traffic to services
+
+    #comparison(
+      "Advantages",
+      "Best Practices",
+      comp1: (
+        "Standardized across vendors",
+        "Supports multiple protocols (TCP, UDP, gRPC)",
+        "Fine-grained traffic control (weighting, retries, timeouts)",
+        "Better separation of concerns",
+      ),
+      comp2: (
+        "Use Gateway API for new projects",
+        "Stick with Ingress for legacy compatibility",
+        "Combine with Service Mesh for advanced needs
+",
+      ),
+    )
+  ]
+
+  == Storage
+  #important("Container filesystems are ephemeral — die with the container.")
+
+  #def("Volumes")[
+    Used to allocate storage that survives a container and stays available during Pod lifetime. They can directly bind to a specific storage type (NFS)
+
+    - At its core, a volume is just a directory, which is accessible to the containers in a Pod
+    - Kubernetes supports several types of volume backends
+  ]
+
+  - A *Persistent Volume* defines access to external storage available in a specific cluster
+  - *Persistent Volume Claims* (PVC), decouple a Pod from a specific PV. It searches for a matching PV, if none exists, a *StorageClass* dynamically provisions one
+
+  #figure(
+    image("resources/pod_pvc_pv_storageclass_flow.svg", width: 80%),
+    caption: [Kubernetes PVC-PV Flow],
+  )
+
+  == ConfigMaps and Secrets
+
+  #compare-table(
+    ([], [ConfigMap], [Secret]),
+    ([*Purpose*], [Non-sensitive key-value config], [Sensitive data (passwords, tokens, keys)]),
+    ([*Encoding*], [Plain], [Base64-encoded by default (not encrypted at rest by default)]),
+    ([*Scope*], [Namespace-scoped], [Namespace-scoped]),
+    ([*Usage*], [Env vars, mounted files, CLI args], [Env vars, mounted files, private image pulls]),
+    ([*Types*], [-], [Opaque, Docker registry creds, TLS certs, service account tokens]),
+    (
+      [*Best practice*],
+      [Version-control alongside manifests],
+      [
+        - Enable etcd encryption at rest
+        - Use External secret managers for production
+        - Never commit to version control
+        - Limit Access with RBAC policies
+      ],
+    ),
+  )
+  #important("Secrets are not truly secret without encryption at rest")
+
+  == Probes
+
+  #def("Probes")[
+    Used to test access to Pods and are part of the Pod specification. The probe itself is a simple test, which is often a command.
+
+    Probe types defined in ```bash pod.spec.containers```:
+    - *exec*: a command is executed and returns a zero exit value
+    - *httpGet*: an HTTP request returns a response code between 200 and 399
+    - *tcpSocket*: connectivity to a TCP socket (available port) is successful
+  ]
+
+  #compare-table(
+    ([Probe], [Purpose]),
+    ([*readinessProbe*], [Gates whether a Pod is marked available for traffic]),
+    ([*livenessProbe* ], [Continuously checks Pod health, can trigger restarts]),
+    ([*startupProbe* ], [For legacy apps needing longer init time (rarely used)]),
+  )
+
   #takeaways((
-    [...],
+    [Kubernetes objects are a record of intent — controllers continuously work to bring current state in line with desired state],
+    [Always prefer Deployments over bare ReplicaSets unless you need custom update orchestration],
+    [Declarative ```bash kubectl apply``` is the recommended way to manage objects — it gives more control than imperative CLI commands],
+    [RollingUpdate is the preferred update strategy over Recreate, since it avoids downtime by replacing Pods incrementally],
+    [```bash maxUnavailable``` and ```bash maxSurge``` are the two levers that tune how aggressive or cautious a rolling update is],
+    [Kubernetes namespaces are a logical/orchestration-layer construct, distinct from Linux kernel namespaces],
+    [Resource requests guarantee scheduling minimums, while limits cap usage and trigger throttling (CPU) or eviction (memory)],
+    [The scheduler places Pods in two phases — filtering out infeasible nodes, then scoring the rest to pick the best fit],
+    [Taints repel Pods unless a matching toleration is present],
+    [Services give ephemeral Pods a stable network identity via label selectors and a virtual ClusterIP],
+    [Gateway API is the modern successor to Ingress, but Ingress remains relevant for legacy compatibility],
+    [Volumes solve the problem of ephemeral container storage; PVCs decouple Pods from specific storage, and StorageClasses provision dynamically when no PV matches],
+    [Secrets are base64-encoded, not encrypted, by default — they require explicit etcd encryption at rest to be genuinely secret],
+    [Readiness, liveness, and startup probes each answer a different question about Pod health, using exec, httpGet, or tcpSocket checks],
   ))
 ]
 
