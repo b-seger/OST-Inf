@@ -2686,27 +2686,366 @@
 #lecture(
   title: "Kubernetes Observability",
   learning-objectives: (
-    "No dedicated \"Learning Objectives\" slide found in this deck — fill in manually if your slide deck version differs.",
+    "No dedicated \"Learning Objectives\"",
   ),
 )[
 
+  Kubernetes doesn't provide observability out of the box: historical metrics aren't persisted by default, `kubectl logs` only shows recent output for running containers, logs vanish when a container dies, and there are no native dashboards or alerts. Since distributed systems can fail at the node, pod, container, or application level, closing this gap is core to both DevOps and SRE practice.
+
   #compare-table(
-    ([Pillar], [Purpose], [Example Tool]),
-    ([Metrics], [Quantitative system state], [Prometheus]),
-    ([Logs], [Discrete event records], [Loki]),
-    ([Traces], [Request flow across services], [Jaeger]),
+    ([], [Monitoring], [Logging]),
+    ([*Nature*], [Quantitative], [Qualitative]),
+    ([*Captures*], [Trends over time], [Detailed event records]),
+    (
+      [*Examples*],
+      [Utilization (memory, disk), counters (requests), rates (error rate)],
+      [Stack traces, system messages, business events],
+    ),
+  )
+
+  #compare-table(
+    ([], [Push (Agent-based)], [Pull (Agentless)]),
+    (
+      [*Mechanism*],
+      [Agent installed on the monitored system sends signals to the collector],
+      [Collector queries the monitored system over an agreed protocol (SNMP, ICMP, HTTP, etc.)],
+    ),
+    (
+      [*Advantage*],
+      [Observed system decides when to send data],
+      [Collector decides when it is ready to query the system],
+    ),
+    ([*Disadvantage*], [Running an agent is not possible everywhere], [Observed system has to be online all the time]),
+  )
+
+
+  == Monitoring with Prometheus
+
+  #def("Prometheus")[
+    Prometheus is a open-source metric collector and time-series DB. It's *pull-based* (scrapes /metrics endpoints over HTTP). It was originally developed at SoundCloud, and donated to the CNCF in 2016.
+
+    It provides a powerful but simple data model to store metrics and uses its own query Language (PromQL).
+
+    It is suitable for using with complex workloads since it can collect millions of metrics/second.
+  ]
+
+  In a Kubernetes context, Prometheus scrapes targets such as kubelets, kube-state-metrics, and exporters. The Prometheus Operator allows scrape configuration to be managed declaratively via Kubernetes custom resources, while Grafana sits on top as the dashboarding and visualization layer.
+
+  #pagebreak()
+
+  === Architecture
+  The Prometheus server itself consists of three core components:
+  - *Retrieval component* that scrapes targets
+  - *TSDB* (time-series database) that stores the collected data locally on disk (HDD/SSD)
+  - *HTTP server* that exposes the data for querying.
+
+  #def("Target")[
+    An endpoint Prometheus scrapes for metrics — e.g. a kubelet, kube-state-metrics, or an exporter. Targets can be defined statically or dynamically (via the Prometheus Operator on Kubernetes).
+  ]
+
+  #def("Exporter")[
+    A mechanism for third-party software that does not natively expose a `/metrics` endpoint. It uses the software's own interface (SQL, filesystem, custom protocol, etc.) to gather information and exposes it in a format Prometheus can scrape. Prometheus then requests metrics from the exporter instead of from the app directly. Use an exporter whenever you can't instrument the code itself — examples include PostgreSQL, Redis, Kafka, and JIRA exporters.
+  ]
+
+  === PromQL
+
+  PromQL is Prometheus's functional query language, used to select and aggregate time-series data in real time — for building graphs/visualizations and for defining alerts.
+  An expression can evaluate to one of four types:
+
+  #compare-table(
+    ([], [Description]),
+    ([Instant vector], [Set of time series, each with a single sample, all sharing the same timestamp]),
+    ([Range vector], [Set of time series, each with a range of data points over time]),
+    ([Scalar], [Simple numeric floating-point value]),
+    ([String], [Simple string value (currently unused)]),
+  )
+
+  #cmd(```
+  # Instant Vector Selector
+  http_requests_total{environment=~"staging|testing", method!="GET"}
+
+  # Range Vector Selector
+  http_requests_total{job="prometheus"}[5m]
+
+  # Time Durations
+  [5h]  [1h30m]  [5m]  [10s]
+
+  # Offset Modifier (positive = backwards in time!)
+  rate(http_requests_total[5m] offset 1w)
+
+  # @-Modifier
+  sum(http_requests_total{method="GET"} @ 1609746000)
+  ```)
+
+  Time durations (e.g. `[5m]`, `[1h30m])`, the offset modifier, and the @ modifier allow queries to look at specific or shifted time windows.
+
+  Each metric is identified by a name plus an unordered set of key-value pairs called labels.
+  PromQL allows the aggregation across labels to analyze metrics
+  - Per process
+  - Per datacenter
+  - Per service
+  - Per any other lable
+
+  *Metrics Format*:\
+  Prometheus exposes metrics in a text-based exposition format that is both human-readable and easy to parse for machines. The basic format is:
+
+  #cmd(`<metric_name>{<label_name>=<label_value>, ...} <metric_value> [<timestamp>]`)
+  #note("The timestamp is optional — it's only needed when ingesting historical data or during remote-write.")
+
+  Example:
+  #cmd(```bash
+  http_requests_total{method="GET", handler="/api/status", status="200"} 1427 1776870361000
+  node_filesystem_avail_bytes{mountpoint="/home"} 207583686656
+  ```)
+
+  Prometheus supports different metric types, for example:
+  - *Counter* — only increases or resets to zero (e.g. requests served, errors, completed tasks)
+  - *Gauge* — a single numerical value that can go up or down (e.g. current memory usage, concurrent requests)
+  - *Histogram* — samples observations into buckets
+  - *Summary* — also samples observations, but additionally provides a total/sum
+
+  === Scaling
+  Since a single Prometheus server is standalone, scaling requires additional patterns:
+  - *Federation* — a hierarchical setup, e.g. a per-region Prometheus scraping selected metrics from per-datacenter Prometheus instances
+  - *Thanos* — the most popular federation solution; runs as a sidecar and adds global queries across instances, long-term storage, and deduplication
+  - *Grafana Mimir* — a horizontally scalable reimplementation of Prometheus with separate components (ingester, querier, etc.), supporting multi-tenancy at very large scale; uses the remote-write (push) model exclusively
+
+  == Visualization & Alerting (Grafana)
+
+  #def("Grafana")[
+    Grafana is a general-purpose data visualization application with a strong emphasis on aesthetics. It works with a wide range of data sources — Prometheus among them — and can pull data from many integrations.
+  ]
+
+  === Querying
+  Grafana sits in front of the collector(s) as a query frontend, in this case Prometheus. Grafana integrates well with identity providers (OAuth — generic, Entra ID, GitHub, etc., as well as SAML and LDAP), making it the natural place to control access. Its "Explore" feature lets you browse data sources and build queries interactively, which is useful for debugging or exploration and can be shared with other team members.
+
+  #pagebreak()
+
+  === Dashboards
+  Dashboards give a visual summary of system health, typically through panels like CPU, memory, network, and pod restarts. Grafana runs a public dashboard repository (`grafana.com/grafana/dashboards`) for importing ready-made dashboards, and many open-source projects also commit their dashboards as JSON files directly to their repositories (e.g. the FluxCD monitoring example), making those easy to import as well.
+
+  Design tips for building good dashboards:
+  - *Most important data to the top* — a dashboard is for humans; a status light is more effective than a raw number
+  - *Plan for other data sources* — use the "Data Source" variable type so the dashboard stays usable as new sources are added later
+  - *Simplicity* — a fully-loaded dashboard looks impressive, but the actual goal is spotting when something is wrong
+  - *Work with the team* — share dashboards early so others working the same problems benefit too
+
+  === Alerting
+  #compare-table(
+    ([], [Prometheus Alertmanager], [Grafana Alerts]),
+    ([*Integration*], [Part of the Prometheus ecosystem], [Integrated into Grafana, which becomes an alert hub]),
+    (
+      [*Good*],
+      [Separates visualization and alerting;\
+        GitOps friendly],
+      [All Grafana data sources can trigger alerts; alert creation is tied to dashboards; can connect to external Alertmanagers],
+    ),
+    (
+      [*Bad*],
+      [Works only for Prometheus],
+      [Not GitOps friendly; alert routing for larger infrastructure not yet optimal],
+    ),
+  )
+
+  *Alertmanager flow*:
+
+  #figure(
+    image("resources/alertmanager_flow.svg", width: 100%),
+    caption: [Alertmangager Flow],
+  )
+
+  #pagebreak()
+
+  *Good practices for alerting*:
+  - Test your alerts — catch issues like a missing SMTP config or an expired Teams token before you need the alert
+  - Build up slowly, working down your priority list — avoid alert fatigue at all cost
+  - Warning ≠ Alert
+    - "A Let's Encrypt certificate will expire in 45 days" is a warning, not an urgent alert
+    - "CPU utilization of worker-01 is at 75%" sits in between - take a closer look
+    - "it's the third day of the month and your Azure budget has reached 200% of planned" is a clear alert
+
+
+  == Logging with Loki
+
+  In Kubernetes each container writes its logs to stdout/stderr. These logs are ephemeral and tied to the container's lifecycle — `kubectl logs` reads them directly from the container runtime, but once a container dies, its logs are gone with it. This is why centralized logging is required for any kind of historical analysis.
+
+  Since logs are mostly unstructured text rather than structured data, a centralized logging platform exists to provide a historical record of events across applications, systems, network devices, and other infrastructure components, along with full-text search. The typical use cases are troubleshooting, debugging, and forensic analysis.
+
+  === Kubernetes logging approaches
+  There are three broad ways to get logs out of a cluster:
+  - *Sidecar containers* for log shipping — less common
+  - *DaemonSets* (Fluent Bit, Alloy, Promtail) — a pod runs on every node and collects logs for all workloads on that node
+  - *Log drivers* and *plugins* can add more advanced features on top
+  Best practice regardless of approach: use structured logs (JSON, machine-readable, with labels attached).
+
+  *Cluster-level logging architectures*
+  These approaches map onto three architecture levels:
+  - *Node level* — a logging agent runs on every node via DaemonSet; works even if the container dies, though shipping is batched rather than strictly real-time
+  - *App level* — the application pushes logs directly to a backend itself
+  - *Sidecar* — a dedicated logging container runs alongside the app inside the same Pod
+    - Within the sidecar approach, there are two distinct patterns:
+      - *Logging agent* — the sidecar exposes logs to stdout, which get written to a shared log-file.log (with logrotate managing rotation); a separate logging-agent-pod reads that file and ships it to the logging backend
+      - *Streaming* — the sidecar logs directly to the backend itself, with no intermediate file
+
+
+  === Loki
+  #def("Loki")[
+    Loki is a horizontally scalable, distributed log aggregation system. Its key idea is that it indexes labels, not full text.
+
+    In a cloud-native environment labels come naturally, so this keeps storage efficient and operational cost low.
+
+    The trade-off versus general-purpose log aggregation systems: no true full-text search, since it's heavily dependent on labels, but in exchange you get excellent compression and fast queries.
+  ]
+
+  #pagebreak()
+
+  *Loki storage concepts*
+
+  Each log line stored in Loki has three parts:
+  - a timestamp
+  - a set of labels
+  - and the message text.
+
+  Only the timestamp and labels are indexed
+
+  *The pipeline*
+
+  Three components work together:
+  - *Alloy* — collects logs from Kubernetes resources and sends them to Loki
+  - *Loki* — ingests logs, processes labels, and prepares them for querying (indexing)
+  - *Grafana* — connects to Loki as a query frontend, providing dashboarding and alerting
+
+  *LogQL*
+
+  LogQL is Loki's query language, syntactically similar to PromQL. It splits into two kinds of queries:
+
+  #compare-table(
+    ([], [Log Queries], [Metric Queries]),
+    ([Purpose], [Filter and search logs], [Generate metrics from logs]),
+    ([Output], [Log lines], [Time series showing a rate]),
+    ([Example], [`{app="api"} |= "error"`], [`rate({app="log-generator"} |= "176" [1m])`]),
+  )
+
+  Every LogQL query starts with a log stream selector (the `{...}` label matchers), optionally followed by a log pipeline for further filtering:
+
+  #cmd(```
+  { log stream selector } | log pipeline
+  ```)
+
+  *Label filters* — applied to the indexed labels themselves:
+
+  #compare-table(
+    ([], [Meaning]),
+    ([`==` or `=`], [Equality]),
+    ([`!=`], [Inequality]),
+    ([`>`, `>=`], [Greater than / greater than or equal]),
+    ([`and`, `or`], [Chain multiple filter operations]),
+  )
+
+  *Log line filters* — applied to the unindexed message text:
+
+  #compare-table(
+    ([], [Meaning]),
+    ([`|=`], [Log line contains string]),
+    ([`!=`], [Log line does not contain string]),
+    ([`|~`], [Log line contains a match to the regex]),
+    ([`!~`], [Log line does not contain a regex match]),
+  )
+
+  #pagebreak()
+
+  === Alloy
+
+  #def("Alloy")[
+    Alloy isn't limited to logs — it collects all types of telemetry. It's configured using its own Alloy language, which is similar to the HCL used in OpenTofu/Terraform, and ships with integrations for Azure, Docker, Kubernetes, EC2, and more. It's installable via Helm chart. In the logging path specifically, Alloy enriches logs with Kubernetes metadata and forwards them to Loki over HTTP.
+  ]
+
+  Classically, DaemonSets were deployed on every node to tap directly into /var/log and collect from every Kubernetes component. Alloy can replicate this with its loki.source.file component (reading log messages from files) — but it can alternatively use loki.source.kubernetes to subscribe to logs via the Kubernetes API instead.
+
+  #compare-table(
+    ([], [Classic DaemonSet / loki.source.file], [loki.source.kubernetes]),
+    ([Privileges], [Often needs elevated/root access], [Does not require root privileges]),
+    ([Deployment], [Needs to run as a DaemonSet], [Does not need to run as a DaemonSet]),
+    ([Resource cost], [Lower CPU/network use], [Uses more CPU, generates more network traffic]),
+  )
+
+  Alloy can also use `loki.source.kubernetes_events` to collect Kubernetes events themselves, and — like the classic approaches — supports filtering and relabeling logs before they're forwarded.
+
+  A minimal Alloy pipeline for shipping pod logs to Loki looks like this:
+  #cmd(```bash
+  discovery.kubernetes "pods" {
+    role = "pod"
+  }
+
+  discovery.relabel "pod_logs" {
+    targets = discovery.kubernetes.pods.targets
+    rule {
+      source_labels = ["__meta_kubernetes_pod_node_name"]
+      target_label  = "__host__"
+    }
+  }
+
+  loki.source.kubernetes "pods" {
+    targets    = discovery.relabel.pod_logs.output
+    forward_to = [loki.write.default.receiver]
+  }
+
+  loki.write "default" {
+    endpoint {
+      url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+    }
+  }
+  ```)
+
+  #pagebreak()
+
+  == Tracing
+  #def("Traces")[
+    Traces capture the path of a single request through a distributed system. A single trace is composed of multiple spans — each span starts when its corresponding context opens and ends when that context closes. Traces provide a request-level view that shows how services interact, which makes them very helpful for debugging microservices.
+  ]
+
+  == Wrap-Up
+
+  === Monitoring and logging — best practices
+
+  - Use labels to add context to your metrics and logs
+  - Find out what data is actually important to you (the slides point to Google's SRE book section on the four golden signals)
+  - Retain only what you need
+  - Avoid excessive verbosity
+  - Set meaningful alert thresholds — avoid alert fatigue
+  - Don't log secrets!
+
+  === Common pitfalls
+  - Too much logging increases storage and complexity
+  - Lack of alert tuning causes noise or missed issues
+  - Forgetting log rotation and archival strategies
+  - Relying only on one observability method
+
+  === Alternative Stacks
+  #compare-table(
+    ([], [Components], [Notes]),
+    ([*EFK*], [Elasticsearch, Fluentd, Kibana], []),
+    ([*PLG*], [Prometheus, Loki, Grafana], [Lightweight, efficient, K8s-native]),
+    ([*LGTM*], [Loki, Grafana, Tempo, Mimir], []),
+    ([*OpenTelemetry*], [—], [Unified telemetry solution]),
   )
 
   #takeaways((
-    [...],
+    [K8s doesn't give you observability by default. No persisted historical metrics, ephemeral logs tied to container lifecycle, no native dashboards or alerting],
+    [Observability = how well you can infer system state; monitoring = actually collecting/storing/evaluating the signals (metrics, logs, traces)],
+    [Metrics (Prometheus) and logs (Loki) are architecturally similar by design],
+    [Loki's "index labels, not full text" choice explains its storage efficiency and its lack of full-text search],
+    [Node-level DaemonSet agents survive container crashes but batch],
+    [Sidecars can stream in near real-time but lose data if the app crashes early or the connection drops],
+    [Tracing is the request-level complement to metrics/logs — it answers "how did this one request move through my services," which neither metrics nor logs alone can show.],
   ))
 ]
 
 // ===========================================================================
-// Lecture 10 — GitOps & Site Reliability Engineering
+// Lecture 10 — GitOps
 // ===========================================================================
 #lecture(
-  title: "GitOps & Site Reliability Engineering",
+  title: "GitOps",
   learning-objectives: (
     "Define GitOps and explain its core principles (Declarativity, Version Control, Automated Delivery, Continuous Reconciliation).",
     "Contrast GitOps with traditional CI/CD push-based models.",
@@ -2720,11 +3059,165 @@
     infrastructure and applications, with automated reconciliation.
   ]
 
-  #important[
-    Know the difference between push-based and pull-based GitOps deployment models.
+  == Principles
+  #compare-table(
+    ([], [Principle], [Meaning]),
+    ([1], [Declarative], [The system's desired state is expressed declaratively]),
+    (
+      [2],
+      [Versioned and Immutable],
+      [Desired state is stored in a way that enforces immutability, versioning, and a full history],
+    ),
+    ([3], [Pulled Automatically], [Software agents automatically pull the desired state from the source]),
+    ([4], [Continuously Reconciled], [Agents continuously observe actual state and attempt to apply the desired state]),
+  )
+
+  Side effects of following these principles: *documentation* (Git history is the audit trail) and *reproducibility*.
+
+  == Traditional CI/CD vs. GitOps
+  #compare-table(
+    ([Aspect], [Traditional CI/CD], [GitOps]),
+    ([Trigger], [CI pushes to prod], [Agent pulls from Git]),
+    ([Trust boundary], [CI server trusted], [Agent / Git repository trusted]),
+    ([Drift detection], [Complex / manual], [Automatic]),
+    ([Rollback], [Complex / manual], [Revert]),
+    ([Security], [CI needs prod admin access], [Agent needs Git read / prod admin access]),
+  )
+
+  #pagebreak()
+
+  == Push vs. pull
+  *Push-based*
+  #pros-cons(
+    pros: (
+      [Ease of use],
+      [Well-known as part of CI/CD],
+      [Fast deployment speed],
+    ),
+    cons: (
+      [Requires opening firewall to the cluster and granting admin access to external CI/CD],
+      [Requires adjusting CI/CD pipelines for new environments],
+      [Configuration drift is harder to manage],
+    ),
+  )
+
+  *Pull-based*
+  #pros-cons(
+    pros: (
+      [Secure infrastructure — no need to open firewall or grant admin access externally],
+      [Changes can be automatically detected and applied without human intervention],
+      [Easier scaling of identical clusters],
+    ),
+    cons: (
+      [You need an agent],
+      [Moderate deployment speed, depending on polling interval and trigger],
+    ),
+  )
+
+  == Argo CD
+
+  #def("Argo CD")[
+    Developed by Intuit (2018), CNCF Graduated (2021). Primary interface: Web UI + CLI. Philosophy: "Platform Engineering" approach. Best for: enterprises, multi-cluster setups, and teams needing a GUI.
   ]
 
+  *Key features*: visual dashboard (app health, sync status, history), hooks (pre-sync/post-sync for complex logic), multi-cluster support from a single UI, granular access control via SSO, built-in health checks.
+
+  *Key resources*:
+  - *Application* — the core resource: what (which repo), where (cluster/namespace), how (sync policy) to deploy
+  - *ApplicationSet* — a generator that creates multiple Applications from a template + list of inputs (e.g. one app per branch, - cluster, or environment)
+  - *AppProject* — logical grouping that restricts what can be deployed where, and who has access
+
+  *Example*:
+  #cmd(```
+  apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    name: my-app
+    namespace: argocd
+  spec:
+    source:
+      repoURL: https://github.com/org/repo.git
+      targetRevision: HEAD
+      path: manifests
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: production
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+  ```)
+
+  == Flux CD
+  #def("Flux CD")[
+    Developed by Weaveworks (2018), CNCF Graduated (2022). Primary interface: CLI + Git (Kubernetes-native). Philosophy: "CLI first" approach. Best for: developers preferring CLI, Helm apps, "Gitless" GitOps.
+  ]
+
+  *Key features:* the *GitOps Toolkit* (modular components), deep native Kustomize integration, "Gitless" support (storing artifacts in OCI registries or S3 buckets instead of Git), a lighter resource footprint than Argo CD, and no central UI by default (CLI-focused, though a separate UI project exists).
+
+  *Key resources:*
+  - *Sources* — store resource definitions: `GitRepository`, `OCIRepository`, `Bucket`, `HelmRepository` (containing `HelmChart` resources)
+  - *Kustomize* — applies stored manifests via `Kustomization`
+  - *Helm* — applies Helm charts via `HelmRelease`
+
+  There are two different `Kustomization` resources — `kustomize.config.k8s.io` (the underlying Kustomize feature itself) vs. `kustomize.toolkit.fluxcd.io` (the Flux CRD that tells Flux to look for and apply a Kustomization). Same name, different API groups, different purpose.
+
+  Example:
+  #cmd(```bash
+  apiVersion: source.toolkit.fluxcd.io/v1
+  kind: GitRepository
+  metadata:
+    name: webapp
+    namespace: default
+  spec:
+    interval: 1m
+    url: https://github.com/org/repo.git
+    ref:
+      branch: main
+  ---
+  apiVersion: kustomize.toolkit.fluxcd.io/v1
+  kind: Kustomization
+  metadata:
+    name: webapp
+    namespace: default
+  spec:
+    interval: 10m
+    sourceRef:
+      kind: GitRepository
+      name: webapp
+    path: ./kustomize
+    prune: true
+    wait: true
+  ```)
+
+  #pagebreak()
+
+  == GitOps Workflow Patterns
+
+  - *App of Apps pattern* (Argo-flavored): a single root Argo `Application` syncs from a repo that itself contains references to multiple child `Application` resources, each pointing at its own repo — a tree of Applications managing Applications.
+  - *Monorepo workflow* (Flux-flavored): a structured single repository —
+    - `./clusters/<cluster>/` — Flux itself plus root Kustomizations (e.g. `flux-system-extra`, `apps`)
+    - `./clusters/flux-system-extra/` — shared resources across all clusters (Helm repositories, CRDs)
+    - `./apps/base/` — shared applications (controllers, configuration, common repositories)
+    - `./apps/<cluster>/` — per-cluster application overlays
+
+  == Secrets Management
+  #compare-table(
+    ([], [Encrypted secrets], [References to secrets]),
+    ([Tools], [Bitnami Sealed Secrets; Mozilla SOPS], [ExternalSecrets; Kubernetes Secrets Store CSI driver]),
+    (
+      [Idea],
+      [Encrypt the secret itself so it's safe to commit to Git],
+      [Commit only a reference/pointer; the real secret lives in an external system],
+    ),
+  )
   #takeaways((
-    [...],
+    [Push-based pipelines have no defense against someone bypassing them entirely],
+    [Pull-based agennts don't just deploy once, they keep checking and correcting],
+    [Drift detection and rollback become automatic: the agent is always comparing against Git, and "rollback" just means "revert in Git."],
+    [Argo CD: UI-first, platform-engineering oriented, strong multi-cluster/SSO story],
+    [Flux CD: CLI-first, Kubernetes-native, modular toolkit, lighter footprint],
+    [App of Apps & monorepo-with-overlays solve the same multi-cluster/multi-env problem differently],
+    [Either encrypt the secret so it's safe to commit (Sealed Secrets, SOPS) or commit only a reference and keep the real value elsewhere (ExternalSecrets, CSI driver)],
   ))
 ]
