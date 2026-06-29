@@ -1521,15 +1521,364 @@
   ),
 )[
 
+  == Helm
+
+  #def("Helm")[
+    Helm is a package manager for Kubernetes that simplifies application deployment and management. Instead of manually creating and maintaining dozens of separate configuration files, Helm bundles everything needed for an application into a single, reusable package called a Helm chart.
+  ]
+
+  === Core Concepts
+
+  #compare-table(
+    ([Term], [Meaning]),
+    ([*Chart*], [Collection of files describing related K8s resources (like a .deb/.rpm)]),
+    ([*Release*], [Running instance of a chart (e.g., my-app-v1)]),
+    ([*Repository*], [Place where charts are stored/versioned]),
+    ([*Template Engine*], [Go templates used to inject variables into YAML]),
+    ([*Values*], [Externalized configuration passed into templates]),
+  )
+
+  #note()[
+    *Release states* (via `helm status`): `deployed` · `failed` · `superseded` · `uninstalling` · `uninstalled` · `pending-install` · `pending-upgrade` · `pending-rollback` · `unknown`
+  ]
+
+  === Helm Charts
+
+  A chart is a collection of files describing related K8s resources
+
   #cmd[
     ```bash
-    helm create mychart
-    helm install myrelease ./mychart
+    mychart/
+    ├── Chart.yaml          ← chart description (metadata)
+    ├── values.yaml          ← default values used in chart
+    ├── charts/              ← dependency charts go here
+    ├── templates/
+    │   ├── _helpers.tpl     ← helper functions (not rendered directly)
+    │   ├── deployment.yaml
+    │   ├── service.yaml
+    │   ├── ingress.yaml
+    │   ├── hpa.yaml
+    │   ├── serviceaccount.yaml
+    │   ├── NOTES.txt        ← printed to the user after install
+    │   └── tests/
+    └── .helmignore
     ```
   ]
 
+  #pagebreak()
+
+  Required fields in a ```bash Chart.yaml```:
+
+  #compare-table(
+    ([Field], [Meaning]),
+    (
+      [*apiVersion*],
+      [Chart API version — `v2` for Helm 3 / Helm 3 features, `v1` for older or backwards-compat charts],
+    ),
+    ([*name*], [Name of the chart]),
+    ([*version*], [SemVer 2 version of the chart itself; must match the version in the package filename]),
+  )
+
+  #important(
+    "Every chart must have a version, and it must follow MAJOR.MINOR.PATCH:
+                        - MAJOR — incompatible API changes
+                        - MINOR — backwards-compatible new functionality
+                        - PATCH — backwards-compatible bug fixes
+                        - Pre-release/build metadata labels are allowed as extensions to that format
+",
+  )
+
+  *Dependencies*:
+  - Stored physically in the chart's charts/ directory
+  - Helm v3: declared in a dependencies: block inside Chart.yaml itself
+  - Each dependency entry has:
+  #compare-table(
+    ([Field], [Meaning]),
+    ([*name*], [Must match the name in the dependency chart's own Chart.yaml]),
+    ([*version*], [Semantic version or a version range]),
+    ([*repository*], [URL or local path to where that chart lives]),
+  )
+
+  #cmd[
+    ```bash
+    # remote
+    dependencies:
+      - name: nginx
+        version: "1.1.1"
+        repository: "https://repo.com/charts"
+
+    # local
+    dependencies:
+      - name: nginx
+        version: "1.1.1"
+        repository: "file://../other-charts/nginx"
+    ```
+  ]
+
+  #cmd[
+    ```bash
+    helm dependency build    # rebuild charts/ from the lock file
+    helm dependency list     # show declared dependencies
+    helm dependency update   # download deps (from Chart.yaml or requirements.yaml) into charts/ository: "file://../other-charts/nginx"
+    ```
+  ]
+
+
+  === Templates
+  A Helm template is a YAML file with placeholders. Helm fills in the placeholders using values, then hands kubectl a normal manifest. It's built on Go's text/template engine — not a YAML-native templating system. It supports general-purpose logic (conditionals, loops, variables)
+
+  #cmd[
+    ```bash
+    {{ .Values.replicaCount }}   →  Helm fills this in  →  replicas: 3
+    ```
+  ]
+
+  *Objects*
+  #compare-table(
+    ([Object], [What it gives you]),
+    ([*.Values*], [Values from values.yaml or other specific files - empty by default]),
+    ([*.Release*], [Describes the release itself]),
+    ([*.Chart*], [Everything accessible from Chart.yaml - example: {{ Chart.Name }}]),
+  )
+
+  *Functions*
+  #cmd[
+    ```bash
+    {{ .Values.name | upper | quote }}
+    ```
+  ]
+  Take the value → uppercase it → put quotes around it
+
+  *Logic*
+  - *if/else* → include something only if a condition is true
+  - *range* → loop over a list
+  - *with* → temporarily say "now . means this specific value" so you don't have to keep retyping the full path
+
+  === Helm lifecycle commands
+
+  #cmd[
+    ```bash
+    helm create <name>         # scaffold a chart
+    helm install <release> <chart>     # deploy
+    helm upgrade <release> <chart> --set ...  # update
+    helm rollback <release> <revision> # revert (use helm history to find revision #)
+    helm uninstall <release>   # remove resources + history
+    helm list                  # show releases
+    helm status <release>      # deployment time, namespace, state, resources
+    helm history <release>     # revision list
+    helm search repo           # find charts
+    helm template <chart>      # render locally without installing
+    helm get manifest <release>        # download rendered YAML
+    helm install --dry-run --debug     # simulate install, verbose
+    ```
+  ]
+
+  #stage(
+    number: 1,
+    name: "Install",
+    activities: (
+      [`helm install <release> <chart>` deploys the chart as a new release],
+      [Optionally test first: `--dry-run --debug` simulates without applying],
+    ),
+    tools: ("helm install", "helm template"),
+  )
+
+  #stage(
+    number: 2,
+    name: "Upgrade",
+    activities: (
+      [`helm upgrade <release> <chart>` updates an existing release],
+      [`--set` overrides specific chart values at upgrade time],
+    ),
+    tools: ("helm upgrade",),
+  )
+
+  #stage(
+    number: 3,
+    name: "Rollback",
+    activities: (
+      [`helm history <release>` lists past revision numbers],
+      [`helm rollback <release> <revision>` reverts to a prior revision],
+    ),
+    tools: ("helm history", "helm rollback"),
+  )
+
+  #stage(
+    number: 4,
+    name: "Uninstall",
+    activities: (
+      [`helm uninstall <release>` removes all resources from the last release],
+      [Release history is also removed by default],
+    ),
+    tools: ("helm uninstall",),
+  )
+
+  == Kustomize
+
+  #def("Kustomize")[
+    Kustomize is a tool for customizing Kubernetes configurations. It takes plain K8s YAML you already have and layers changes on top of it declaratively, via kustomization.yaml
+  ]
+
+  - *Base* = what's common across all variants
+  - *Overlay* = the differences for one specific variant (e.g. dev, prod)
+  - Output is a "variant" — pure rendered YAML
+  - Build per environment: kustomize build overlays/prod
+
+  Example directory layout:
+  #cmd[
+    ```bash
+    ~/someApp
+    ├── base/
+    │   ├── deployment.yaml
+    │   ├── kustomization.yaml
+    │   └── service.yaml
+    └── overlays/
+        ├── development/
+        │   ├── cpu_count.yaml
+        │   ├── kustomization.yaml
+        │   └── replica_count.yaml
+        └── production/
+            ├── cpu_count.yaml
+            ├── kustomization.yaml
+            └── replica_count.yaml
+    ```
+  ]
+
+  #pagebreak()
+  Kustomize commands:
+
+  #cmd[
+    ```bash
+    kustomize create --resources <file>   # scaffold kustomization.yaml
+    kustomize edit                        # modify kustomization.yaml programmatically
+                                           #   (add resource, set image, add label, remove resource)
+    kustomize build <dir>                 # render final manifest (often piped to kubectl apply -f -)
+    kustomize cfg fmt <dir>               # format for consistency
+    kustomize localize <dir>              # bundle remote (URL/Git) resources locally for offline use
+    ```
+  ]
+
+  #def("Transformers")[
+    Built-in functions that "transform" your manifests using simple declarative rules. You declare what you want changed in kustomization.yaml; Kustomize applies it.
+
+    #cmd[
+      ```bash
+      apiVersion: kustomize.config.k8s.io/v1beta1
+      kind: Kustomization
+      metadata:
+        name: demo
+
+      resources:
+        - base/nginx-app.yaml
+
+      labels:
+        - includeSelectors: true
+          pairs:
+            app.kubernetes.io/name: hello
+
+      namespace: cldop
+
+      commonAnnotations:
+        version: 1.0.0
+
+      namePrefix: kustom-
+      nameSuffix: -v1
+      ```
+    ]
+
+    You can: add labels, set a namespace, add annotations, and prefix/suffix every resource name — all without touching the original manifests
+  ]
+
+  #def("Patches")[
+    A patch is a partial spec — it doesn't redefine a whole resource, just describes what one section should look like after the change.
+    - It can either *replace* an existing value or *append* to a list; which one happens depends on the patch operation (op:) used
+    - Kustomize needs enough info (target: kind/name) to know exactly which resource/field you're patching, otherwise it can't apply it correctly.
+
+    Example — renaming a Service via patch:
+
+    #cmd[
+      ```bash
+      patches:
+      - patch: |-
+          - op: replace
+            path: /metadata/name
+            value: nginx-server
+        target:
+          kind: Service
+          name: nginx-app
+      ```
+    ]
+
+    Result: nginx-app → kustom-nginx-server-v1 (the patch rename plus the namePrefix/nameSuffix transformers from the kustomization file both apply).
+  ]
+
+  === ConfigMaps/Secrets in Kustomize
+
+  #compare-table(
+    ([], [Option 1: Traditional Model], [Option 2: Generator Mode]),
+    (
+      [*Definition*],
+      [Plain ConfigMap/Secret YAML, included via resources:],
+      [configMapGenerator / secretGenerator in kustomization.yaml],
+    ),
+    (
+      [*Behavior on change*],
+      [Pods' mounted config updates without a rolling update],
+      [kustomize build appends a content hash to the name, so referencing Deployments see a changed name → triggers rolling update],
+    ),
+  )
+
+  Secret generator can build from *literals:* (key=value pairs) or *files:* (e.g. a password.txt), both rendered into a base64-encoded ```bash Secret``` manifest with a hashed name suffix.
+
+  == Comparison & Best Practices
+
+  #compare-table(
+    ([Requirement], [Recommended Tool]),
+    (
+      [Distribute a complex app (DB + App)],
+      [*Helm*],
+    ),
+    (
+      [Manage env-specific configs (Dev/Prod)],
+      [*Kustomize*],
+    ),
+    (
+      [Avoid learning a new templating language],
+      [*Kustomize*],
+    ),
+    (
+      [Consume community charts],
+      [*Helm*],
+    ),
+    (
+      [Need loops/conditionals],
+      [*Helm*],
+    ),
+  )
+
+  === Best practices
+  - Keep custom resources and their instances in separate packages
+  - Keep common values (namespace, metadata) in the base
+  - Organize resources by kind (e.g. horizontal-pod-autoscaler.yaml, services.yaml)
+  - Follow standard directory structure: bases, patches, overlays
+
+  === Common pitfalls
+  - *Helm*: over-complicating templates — keep them simple
+  - *Kustomize*: too many nested overlays — flatten the structure
+  - *Both*: not pinning image versions
+  - *Both*: ignoring state management (Helm release drift / Kustomize drift)
+  - *Both*: not validating manifests before applying
+
+
+
   #takeaways((
-    [...],
+    [Helm is a package manager that templates and versions releases; Kustomize is an overlay tool that patches plain YAML with no templating language.],
+    [A Chart is the packaged unit; a Release is a running instance of that chart in the cluster, and one chart can produce multiple releases.],
+    [Kustomize's Base/Overlay pattern keeps common config in the base and environment-specific differences in overlays.],
+    [Use Helm for complex multi-component apps, community charts, or when you need loops/conditionals; use Kustomize for environment-specific configs or to avoid learning a templating language.],
+    [Editing a traditional ConfigMap doesn't trigger a rolling update, but Kustomize's configMapGenerator/secretGenerator hashes the name on change, which does trigger one.],
+    [Common pitfalls include over-complicated Helm templates, deeply nested Kustomize overlays, unpinned image versions, ignored drift, and skipping manifest validation before applying.],
+    [The Helm lifecycle follows install → upgrade → rollback (via helm history) → uninstall, with helm status reporting release state independently at any point.],
   ))
 ]
 
@@ -1551,11 +1900,638 @@
   #def("eBPF")[
     A technology that runs sandboxed programs in the Linux kernel without
     changing kernel source code, used by Cilium for networking/security.
+
+    #compare-table(
+      ([Concept], [Role]),
+      ([*BPF programs*], [Code logic that runs at kernel hook points]),
+      ([*BPF maps*], [Persist state between program invocations (datapath config, observability counters, etc.)]),
+    )
   ]
 
-  #takeaways((
-    [...],
-  ))
+  #def("Cilium")[
+    An eBPF-powered Container Network Interface (CNI) for Kubernetes that provides high-performance networking, deep observability, and security enforcement
+  ]
+
+  #pagebreak()
+
+  == Cilium Networking
+  #def("Kubernetes Network Policy")[
+    A declarative, pod-level network firewall abstraction that understands Kubernetes identities (like labels) rather than just IP addresses. The standard, built-in Kubernetes resource for basic L3/L4 policies
+  ]
+
+  #def("CiliumNetworkPolicy")[
+    A Custom Resource Definition (CRD) that is a superset of the standard policy, adding advanced features like L7 (API-aware) rules and FQDN filtering
+  ]
+
+  #figure(
+    image("resources/cilium_architecture.png", width: 80%),
+    caption: [Cilium Architecture - High-level View],
+  )
+  *Architecture components*:
+
+  #compare-table(
+    ([Concept], [Role]),
+    ([*cilium-operator*], [Talks to kube-apiserver and cloud provider APIs / KV store]),
+    ([*cilium-cni*], [CNI plugin invoked by kubelet]),
+    ([*cilium-agent*], [Per-node daemon, programs eBPF]),
+    ([*hubble-export*], [Exports flow data to SIEM/JSON/Grafana/etc.]),
+  )
+
+  Cilium does not enforce policy on IP addresses. Pods get a security identity derived from their labels (e.g., role=backend → identity 20). Policy decisions are identity-to-identity, which is why churning pod IPs don't break policies.
+
+  #pagebreak()
+
+  *Feature-by-feature comparison between NetworkPolicy and CiliumNetworkPolicy*:
+  #compare-table(
+    ([Aspect], [NetworkPolicy], [CiliumNetworkPolicy]),
+    ([*Origin*], [Built-in Kubernetes API object], [Cilium Custom Resource Definition (CRD)]),
+    ([*API kind*], [`NetworkPolicy`], [`CiliumNetworkPolicy` (CNP)]),
+    ([*Layer support*], [L3 / L4 only], [L3 / L4 / L7 (HTTP, gRPC, Kafka, DNS, ...)]),
+    ([*Selectors*], [`podSelector`], [`endpointSelector`, incl. `matchExpressions`]),
+    ([*CIDR support*], [`ipBlock` (basic)], [`toCIDR` / `fromCIDR`, `toCIDRSet` / `fromCIDRSet`]),
+    ([*FQDN / DNS-aware rules*], [Not supported], [`toFQDNs` (requires a DNS proxy rule)]),
+    (
+      [*Reserved entities*],
+      [Not supported],
+      [`toEntities`/`fromEntities`: world, cluster, host, remote-node, kube-apiserver],
+    ),
+    ([*Cluster-wide scope*], [Not supported (namespaced only)], [`CiliumClusterwideNetworkPolicy` variant available]),
+    ([*Port ranges*], [Not supported], [`endPort` keyword (Cilium 1.16+)]),
+    (
+      [*Relationship*],
+      [Subset],
+      [Superset — includes everything NetworkPolicy can express, plus advanced Cilium features],
+    ),
+  )
+
+  == Cilium Network Core Concepts
+
+  #def("Declarative Policy")[
+    - Allowed connectivity is defined using declarative Kubernetes resources
+    - *NetworkPolicy*: built-in K8s abstraction for basic policies
+    - *CiliumNetworkPolicy*: Custom Resource Definition (CRD) that is a super-set of NetworkPolicy, includes advanced Cilium features
+    - Each network policy resource defines one or more "*rules*
+  ]
+
+  #def("Endpoint Selection")[
+    - Each policy exists in a namespace, except for cluster-wide network policies
+    - Endpoint selectors match pods within that namespace, or cluster-wide
+    - A policy matches 0 or more pods in a namespace based on a *label-match*:
+      - `podSelector` field in NetworkPolicy
+      - `endpointSelector` field in CiliumNetworkPolicy
+    - *Subset Match*: pod must have the labels specified in `matchLabels`, but may have other labels as well
+    - Each rule is applied to all pods that match
+  ]
+
+  #pagebreak()
+
+  #def("Ingress & Egress Rules")[
+    - *Ingress Rules*: traffic entering a pod.
+    - *Egress Rules*: traffic leaving a pod.
+    - Policies may have any combination of ingress & egress rules
+    - Enforcement is split by direction and side of the connection:
+      - *Pod A Egress Enforcement* — connectivity leaving Pod A
+      - *Pod B Ingress Enforcement* — connectivity entering Pod B
+      - Same logic applies at the cluster boundary: connectivity *entering the cluster* is enforced at the destination pod's ingress; connectivity *leaving the cluster* is enforced at the source pod's egress.
+  ]
+
+  #def("Default Deny Model")[
+    - Each rule describes an *allowed* type of connectivity
+    - Total allowed connectivity is the *logical OR* of all rules applied to a pod
+    - Connectivity not explicitly allowed is *implicitly denied*
+  ]
+  #def("Automatically Allowed Connections")[
+    - Default deny model does *NOT* apply:
+      - On ingress for a pod if no ingress rules matches the pod.
+      - On egress for a pod if no egress rules matches the pod.
+    - *All ingress connectivity from K8s worker nodes is automatically allowed*
+      - Avoid unintentional impact on network liveness/readiness probes from kubelet.
+      - Allows connectivity from host-network pods. Host-network == trusted.
+  ]
+  #def("Stateful Connection Tracking")[
+    - *Connection reply traffic is automatically allowed*
+    - Mechanism:
+      - egress enforcement on the initiating side does a conntrack match, the connection is initiated (e.g. TCP: 10.0.0.1:12345 → 1.2.3.4:80)
+      - ingress enforcement on the receiving side does its own conntrack match for the connection reply (TCP: 1.2.3.4:80 → 10.0.0.1:12345) and allows it automatically.
+  ]
+
+  #def("Policy Layers")[
+    L3: Network Endpoints:
+    - toEndpoints / fromEndpoints
+    - toCIDR / fromCIDR
+    - fromCIDRSet / toCIDRSet
+    - toFQDN
+    L4:
+    - toPort / fromPort
+    L7:
+    - DNS
+    - HTTP, gRPC
+    - Kafka, Memcached, Cassandra
+  ]
+
+  == Policy Definition
+
+  === Policy Layers
+  - Within a rule, each layer is logically AND'd with the other layers
+  - Unspecified layers are wildcards
+  #compare-table(
+    ([Pattern], [Meaning]),
+    ([L3-only], [matches from frontend, all L4 ports allowed]),
+    ([L4-only], [matches all L3 remote endpoints, only port 80/TCP allowed]),
+    ([L3 + L4], [matches from frontend AND port 80/TCP — both must hold]),
+  )
+
+  #cmd(
+    ```bash
+    # L3-only (all L4 ports)
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          role: frontend
+
+    # L4-only (all L3 remote endpoints)
+    ingress:
+    - toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+
+    # L3 + L4
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          role: frontend
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+    ```,
+  )
+
+  === Multiple Rules per Policy
+  - 2 separate rule list items → logical OR
+  - 1 combined rule (fields nested under the same -) → logical AND
+
+  #cmd(
+    ```bash
+    # 2 Rules (logical OR)
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          role: frontend
+    - toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+
+    # 1 Rule (logical AND)
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          role: frontend
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+    ```,
+  )
+
+  === Advanced Endpoint Selectors
+
+  #compare-table(
+    ([Selector type], [Behavior]),
+    (
+      [Multi-label Match],
+      [Pod must have all labels to match (logical AND) — e.g. `org: empire` AND `class: deathstar`],
+    ),
+    ([Wildcards], [`endpointSelector: {}` matches all endpoints]),
+    (
+      [Set-Based Label Selectors],
+      [More complex/powerful matching via `matchExpressions` (e.g. `key: k8s-app, operator: NotIn, values: [app1, app2]`)],
+    ),
+  )
+
+  #cmd(
+    ```bash
+    # Multi-label Match (AND)
+    spec:
+      endpointSelector:
+        matchLabels:
+          org: empire
+          class: deathstar
+
+    # Wildcards
+    spec:
+      endpointSelector: {}
+
+    # Set-Based Label Selectors
+    spec:
+      endpointSelector:
+        matchExpressions:
+        - key: k8s-app
+          operator: NotIn
+          values:
+          - app1
+          - app2
+    ```,
+  )
+
+  === toEndpoints/fromEndpoints
+  - *Subset match*: pod must have all labels specified in `matchLabels` to be allowed by the rule, but may have additional labels as well
+  - Namespaces are the key consideration when matching on labels
+
+  #compare-table(
+    ([Binding type], [How it works]),
+    (
+      [Implicit Local Namespace Binding],
+      [Plain `matchLabels` — implicitly scoped to the same namespace as the policy],
+    ),
+    (
+      [Explicit Namespace Binding],
+      [Add `k8s:io.kubernetes.pod.namespace:` to `matchLabels` to target a specific other namespace],
+    ),
+    (
+      [Match all endpoints in local namespace],
+      [`matchLabels: {}` — wildcard within local namespace],
+    ),
+    (
+      [Wildcarding Namespace],
+      [Use `matchExpressions` with `key:` / `operator: ` to match across *any* namespace],
+    ),
+  )
+
+  #pagebreak()
+
+  #cmd(
+    ```bash
+    # Implicit Local Namespace Binding
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          role: frontend
+    ```,
+  )
+
+
+
+  #cmd(
+    ```bash
+    # Explicit Namespace Binding
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          role: frontend
+          k8s:io.kubernetes.pod.namespace: foo
+
+    # Match all endpoints in local namespace
+    ingress:
+    - fromEndpoints:
+      - matchLabels: {}
+
+    # Wildcarding Namespace
+    ingress:
+    - fromEndpoints:
+      - matchExpressions:
+        - key: k8s:io.kubernetes.pod.namespace
+          operator: Exists
+        - key: app
+          operator: In
+          values:
+          - backend
+    ```,
+  )
+
+  === toCIDR/fromCIDR and toCIDRSet/fromCIDRSet
+
+  #cmd(
+    ```bash
+    # toCIDR
+    egress:
+    - toCIDR:
+      - 10.0.0.0/8
+
+    # toCIDRSet (with exception)
+    egress:
+    - toCIDRSet:
+      - cidr: 0.0.0.0/0
+        except:
+        - 169.254.169.254/32
+    ```,
+  )
+
+  #important(
+    "CIDR and CIDR-based policies apply ONLY to IPs that are outside the cluster. Do not use them to try and match on Pod, Service, or Worker Node IPs.",
+  )
+
+  #pagebreak()
+
+  === toFQDNs L3 Policies
+  #compare-table(
+    ([Mode], [Example]),
+    (
+      [Exact match],
+      [matchName: `"www.domain.net"` — automatically translated from DNS names, similar to toCIDR],
+    ),
+    ([Pattern match], [`matchPattern: "*.company.com"` — regex-based matching]),
+  )
+
+  #cmd(
+    ```bash
+    egress:
+    - toFQDNs:
+      - matchName: "www.domain.net"
+
+    egress:
+    - toFQDNs:
+      - matchPattern: "*.company.com"
+    ```,
+  )
+
+  #important(
+    "Try to avoid using overlapping toFQDNs — especially across multiple policies.",
+  )
+
+
+  === toFQDNs DNS proxy requirement
+  - toFQDNs rules can only be applied to pods that also have a DNS proxy rule that intercepts all DNS lookups from that pod
+  - For security reasons, this rule should be limited to DNS servers that you trust (cluster-internal, e.g. only to core-dns).
+
+  #cmd(
+    ```bash
+    toEndpoints:
+    - matchLabels:
+        io.kubernetes.pod.namespace: kube-system
+        k8s-app: kube-dns
+      toPorts:
+      - ports:
+        - port: "53"
+          protocol: ANY
+        rules:
+          dns:
+          - matchPattern: "*"
+    ```,
+  )
+
+  === toEntities/fromEntities + Reserved L3 Identities
+  Special reserved identities that correspond to a group of endpoints or notable entities:
+
+  #compare-table(
+    ([Entity], [Meaning]),
+    ([world], [all endpoints outside the cluster]),
+    ([cluster], [all managed pod endpoints]),
+    ([host], [the local K8s worker node]),
+    ([remote-node], [non-local K8s worker nodes]),
+    ([kube-apiserver], [remote nodes which have healthy backends serving the kube-apiserver]),
+  )
+
+  #pagebreak()
+
+  #cmd(
+    ```bash
+    ingress:
+    - fromEntities:
+      - world
+
+    egress:
+    - toEntities:
+      - cluster
+      - host
+      - remote-node
+    ```,
+  )
+
+  === toPorts
+
+  #compare-table(
+    ([Pattern], [Behavior]),
+    ([L4-only], [implicitly allows from all L3 entities]),
+    ([L3 + L4], [allows only connections that match at both layers]),
+  )
+
+  #cmd(
+    ```bash
+    # L4-only — implicitly allow from all L3 entities
+    ingress:
+    - toPorts:
+      - ports:
+        - port: "80"
+          protocol: ANY
+
+    # L3 + L4 — match at both layers
+    egress:
+    - toPorts:
+      - ports:
+        - port: "80"
+          protocol: ANY
+      fromEndpoints:
+      - matchLabels: {}
+    ```,
+  )
+
+  === Port Ranges
+  - *With Cilium 1.16+*: implementation of the `endPort` keyword, allowing port ranges in CiliumNetworkPolicies and CiliumClusterwideNetworkPolicies.
+
+  #cmd(
+    ```bash
+    ingress:
+    - fromEndpoints:
+      - matchLabels:
+          app: client
+      toPorts:
+      - ports:
+        - port: "8080"
+          endPort: 8082
+          protocol: TCP
+    ```,
+  )
+
+  #pagebreak()
+
+  === L7 Policy Example (HTTP)
+
+  Same L4-only vs. L3+L4 pattern, one layer up — now with an http rule under toPorts:
+
+  #compare-table(
+    ([Pattern], [Behavior]),
+    ([L4 + L7], [implicitly allows from all L3 entities]),
+    ([L3 + L4 + L7], [allows only connections that match at all layers]),
+  )
+
+  #cmd(
+    ```bash
+    # L4 + L7 — implicitly allow from all L3 entities
+    ingress:
+    - toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+        rules:
+          http:
+          - method: GET
+            path: "/path"
+
+    # L3 + L4 + L7 — match at all layers
+    egress:
+    - fromEndpoints:
+      - matchLabels:
+          app: frontend
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+        rules:
+          http:
+          - method: GET
+            path: "/path"
+    ```,
+  )
+
+  #pagebreak()
+
+  == Common patterns
+
+  === Default Deny Policy
+  - Select all endpoints in namespace, specifying only an "empty" rule for ingress + egress
+  - Subverts the “automatic allowˮ by ensuring that all endpoints have at least one ingress + egress rule, but doesnʼt permit any traffic.
+  - Can be installed by default in a namespace, requiring the app team to add explicit "allow" exceptions.
+
+    #cmd(
+      ```bash
+      apiVersion: "cilium.io/v2"
+      kind: CiliumNetworkPolicy
+      metadata:
+        name: deny-all
+        namespace: my-namespace-xy
+      spec:
+        description: Block everything
+        endpointSelector: {}
+        ingress:
+        - {}
+        egress:
+        - {}
+      ```,
+    )
+
+    #important("This example will even deny namespace internal and traffic toward core-dns/Kubernetes API!")
+
+  *Allow within Namespace*:
+
+  A variant of the pattern above: instead of an empty rule (which permits nothing), use {} as the match value inside fromEndpoints/toEndpoints — this allows all in-namespace traffic while still denying everything else
+
+  #cmd(
+    ```bash
+    apiVersion: "cilium.io/v2"
+    kind: CiliumNetworkPolicy
+    metadata:
+      name: allow-within-namespace
+      namespace: my-namespace-xy
+    spec:
+      description: Allow NS internal traffic, block everything else
+      endpointSelector: {}
+      ingress:
+      - fromEndpoints:
+        - {}
+      egress:
+      - toEndpoints:
+        - {}
+    ```,
+  )
+
+  #important("This example will deny traffic toward core-dns/Kubernetes API!")
+
+  #pagebreak()
+
+  *Default DNS Proxy Rule*:
+
+  - Before applying a "default deny," it is recommended to apply a DNS proxy rule — per namespace, or as a CiliumClusterwideNetworkPolicy — to allow and observe all DNS lookups.
+  - This is the standard fix for the "Careful" warnings on slides 43–44: add this rule first, then layer the deny-all / allow-within-namespace pattern on top.
+
+  #cmd(
+    ```bash
+    - toEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+      - ports:
+        - port: "53"
+          protocol: ANY
+        rules:
+          dns:
+          - matchPattern: "*"
+    ```,
+  )
+
+  === L7 Visibility Policies
+  - Provides visibility into API-layer requests, even if no policy is being enforced
+  - For L7 policy, an "empty rule" matches any L7 request, resulting in wildcard behavior
+  - Visibility policies can be ingress, egress, or both
+  - Must remember to also have a rule that allows all traffic on other ports as well — the visibility rule only covers the port it's attached to
+
+  #cmd(
+    ```bash
+    apiVersion: cilium.io/v2
+    kind: CiliumNetworkPolicy
+    metadata:
+      name: http-ingress-visibility
+    spec:
+      endpointSelector:
+        matchLabels: {}
+      ingress:
+      - fromEntities:
+        - all
+        toPorts:
+        - ports:
+          - port: "80"
+            protocol: "TCP"
+          rules:
+            http:
+            - {}
+    ```,
+  )
+
+  #pagebreak()
+
+  == Getting Started with Cilium Network Policies & Hubble
+
+  #def("Hubble")[
+    Cilium's observability layer, built on the same eBPF data the dataplane already collects. Three interfaces onto that data:
+    - Hubble UI — service dependency maps, flow filtering, policy viewer
+    - Hubble CLI — detailed flow visibility, filtering, JSON output
+    - Hubble Metrics — feeds Grafana/Prometheus for ops & application monitoring
+  ]
+
+  *The recommended workflow*:
+  + Handle network policies as early as possible — not as an afterthought.
+  + Build them bottom-up: nodes (optional) → Kubernetes → Cilium → infrastructure components → user workloads.
+  + Continuously watch for DROPPED connections via Hubble.
+  + Iterate until no false positives remain
+
+
+
+  === Common Gotchas
+
+  - Enabling egress enforcement rules, but not also allowing DNS connectivity
+  - Creating toFQDNs rules without corresponding DNS proxy rule
+  - Creating an FQDN policy for internal k8s services
+  - Creating rules based on the label-identity of unmanaged pods.
+  - Creating rules to allow connections to pods based on IPs/CIDRs.
+    - Use toEndpoints instead
+  - Creating rules to allow connections to K8s worker nodes based on IPs.
+    - Use toEntities with host and remote-node instead
+
+
+    #takeaways((
+      [eBPF makes the kernel safely programmable],
+      [Cilium enforces policy on identity, not IP],
+      [`CiliumNetworkPolicy` is a strict superset of `NetworkPolicy`, but adds L7, FQDN, CIDR sets, reserved entities, and cluster-wide scope],
+      [Default-deny has two important exceptions: it only applies once some rule exists for that direction and and traffic from worker nodes / host-network pods is always auto-allowed regardless of policy],
+      [Within a rule, layers are AND'd; across rules, they're OR'd],
+      [Connection replies are automatically allowed via conntrack],
+      [CIDR rules only apply outside the cluster],
+      [`toFQDNs` needs a DNS proxy rule to function at all],
+      [The practical workflow is observe-then-restrict: use Hubble to see real traffic before tightening policy],
+    ))
 ]
 
 // ===========================================================================
