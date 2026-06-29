@@ -2540,17 +2540,143 @@
 #lecture(
   title: "Service Mesh",
   learning-objectives: (
-    "No dedicated \"Learning Objectives\" slide found in this deck — fill in manually if your slide deck version differs.",
+    "No dedicated \"Learning Objectives\"",
   ),
 )[
 
-  #def("Service Mesh")[
-    Dedicated infrastructure layer for handling service-to-service communication,
-    typically via sidecar proxies.
+  #def("Microservices")[
+    A style of application architecture where a collection of independent services communicate through lightweight APIs, taking a cloud-native approach so each core function can exist independently.
+
+    - *Pros*: independent deployment, flexibility, scalability, fault isolation, team autonomy
+    - *Cons*: operational complexity, distributed system challenges, data consistency, possibly higher resource usage, increased testing overhead
   ]
 
+  Microservices introduce challenges: load balancing/traffic mirroring/rate limiting, fault tolerance, secure communication, observability/debugging. Thats where a service mesh comes to play.
+
+  #def("Service Mesh")[
+    A service mesh is a dedicated infrastructure layer within a software application that handles communication between services, handling traffic routing, security, observability, and resiliency while abstracting that complexity away from individual services.
+
+    *Capabilites*:
+    - *Traffic Management* (fine-grained routing, traffic splitting)
+    - *Resilience* (fault tolerance, automatic retries/fallback)
+    - *Security* (encrypted comms, authN, authZ)
+    - *Observability* (metrics, logs, tracing)
+  ]
+
+  == Core components
+  Originally, every app had to implement these features itself. The fix: embed the mesh logic in a sidecar proxy running alongside (not inside) the app — transparently intercepting traffic, no app code changes needed.
+
+  - *Data plane*: lightweight proxies (e.g. Envoy) handling communication, metrics, security enforcement
+  - *Control plane*: manages config/policy (e.g. Istiod) and pushes rules to the data plane dynamically
+
+  Sidecars have two major downsides:
+  - Invasiveness
+    - modifies pod spec
+    - redirects in-pod traffic
+    - requires pod restarts to upgrade
+  - Underutilization of resources
+    - every workload needs its own proxy provisioned for worst-case load
+
+  #pagebreak()
+
+  == Sidecarless Service Mesh
+  L2–L4 (Ethernet/IP/TCP-UDP) can move into the kernel via eBPF, but L7 (HTTP, gRPC) parsing still requires a userspace proxy. The general approach is to split service mesh functionality into two tiers.
+
+  #compare-table(
+    ([Tier], [Functions], [Cost]),
+    (
+      [*Secure Overlay Layer*],
+      [TCP routing, mTLS tunneling, simple authZ, TCP metrics/logging],
+      [streamlined, low resource, zero-trust],
+    ),
+    (
+      [*TL7 Processing Layer*],
+      [HTTP routing/LB, circuit breaking, rate limiting, fault injection, retries/timeouts, rich authZ, HTTP metrics/tracing],
+      [everything above plus this — i.e. strictly more expensive],
+    ),
+  )
+
+  === Cilium VS Istio Approach
+
+  #compare-table(
+    ([], [Istio], [Cilium]),
+    ([*L3/L4 layer*], [ztunnel (userspace daemon, 1/node], [eBPF programs (in-kernel, no daemon)]),
+    (
+      [*L7 layer*],
+      [Waypoint proxy (Envoy, 1/namespace, opt-in)],
+      [Per-node Envoy (opt-in per flow)],
+    ),
+    (
+      [*L4 traffic touches userspace?*],
+      [Yes (ztunnel is still a userspace process)],
+      [No — stays in-kernel],
+    ),
+    (
+      [*Node-to-node L4 transport*],
+      [Node-to-node L4 transport],
+      [Native eBPF-accelerated path],
+    ),
+  )
+
+  Istio: Split is two distinct components (ztunnel, Waypoint proxy), with two distinct deployment scopes (node vs. namespace), each handling one layer.\
+  ztunnel handles mTLS, L4 telemetry, authentication, authorization
+  Node-to-node traffic between ztunnels travels over an HTTPS CONNECT tunnel.\
+  Waypoint proxy Provides L7 telemetry and authorization policies at the HTTP level.
+
+  Cilium: There's no always-on second proxy hop for L4 traffic. eBPF is the L4 mesh layer,running in-kernel rather than as a sidecar or per-node daemon process.
+  Envoy only gets invoked, flow-by-flow, exactly when L7 visibility/policy is actually required.
+
+  == Traffic management / deployment strategies
+  In a microservices graph, services call each other extensively, so a single failing service doesn't fail in isolation — its callers start failing too, and their callers after that. This cascading failure pattern is the core risk a service mesh's traffic-management features are designed to contain
+
+  === GAMMA
+
+  The GAMMA Initiative (Gateway API for Mesh Management and Administration) extends the Kubernetes Gateway API — originally built for north/south ingress traffic — to also govern east/west (service-to-service) traffic inside the mesh, via the same HTTPRoute resource. It's increasingly supported across service meshes, and it's the mechanism that makes some of the canary routing below possible (e.g. header-based routing uses HTTPRoute rules under the hood).
+
+  #pagebreak()
+
+  === Rolling Deployment
+  Replaces old instances with new ones in batches. Ensures zero downtime and doesn't require a duplicate environment — but both versions coexist temporarily while the rollout is in progress.
+
+  === Recreate / Big-bang Deployment
+  Shuts down the entire old version before deploying the new one. Simple, but causes inevitable downtime since there's a gap with nothing running.
+
+  === Canary Deployment
+  Releases the new version to a small, select group of users before a full rollout — minimizing blast radius and allowing real-world testing.
+
+  - *With plain Kubernetes Services*: traffic is always split evenly across all pods behind a Service. To get a specific weight (e.g. v1 getting less traffic than v2), you have to create additional pod replicas as a workaround — there's no other way to weight or selectively stop traffic to specific pods.
+
+  - *With a service mesh*: arbitrary traffic weights are possible directly, no extra pods needed.Routing can also be conditioned on headers rather than just weight, letting you target specific test traffic into the canary precisely.
+
+  === Blue/Green Deployment
+  The environment running the previous version is kept alive rather than torn down. Traffic is switched all at once (100%/0%) rather than gradually. This allows a fast fallback to the old deployment even after a full switch, and can be combined with canary deployments (e.g. canary first, then a full blue/green cutover once confidence is high).
+
+  === Dark Launching / Shadow Deployment
+  Mirrors live traffic to the new version without it affecting the actual user-facing response — the real response still comes from the old version, but the new version processes a copy of the traffic in parallel. This allows silent testing under real load with zero user-facing risk.
+
+  == Security
+  *Motivation*: all pods sit on a flat network by default, so anything can talk to anything — service mesh adds access control on top.
+
+  Two policy types:
+  - *Authentication policies* — define who can talk to whom (service identity)
+  - *Authorization policies* — fine-grained access control via RBAC, can be as granular as HTTP method/path (GET/POST/PATCH/DELETE) per service
+
+  Authentication splits into:
+  - *Service-to-service*: mutual TLS (mTLS)
+  - *User-to-service*: JWTs, OpenID Connect
+
+  Other security functions: transparent encryption of all inter-service traffic (mTLS / WireGuard / IPSec), automatic certificate/key issuance and rotation.
+
+  #pagebreak()
+
   #takeaways((
-    [...],
+    [Microservices solve scalability/modularity but create distributed-systems problems],
+    [A service mesh = data plane (proxies) + control plane (policy distribution)],
+    [Sidecars are invasive and resource-inefficient, motivating a sidecarless design],
+    [L7 is the one layer that can't be fully pushed into the kernel],
+    [Cascading failure is the core risk that traffic-management features defend against],
+    [Plain Kubernetes Services can't do weighted or conditional traffic splitting — a service mesh can],
+    [All pods sit on a flat network by default, so anything can talk to anything. Necessitating the need for: Authentication, Authorization, Traffic encryption and Certificate/Key rotation],
   ))
 ]
 
