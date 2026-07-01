@@ -318,12 +318,12 @@
       columns: (1fr, 1fr),
       column-gutter: 16pt,
       [
-        #text(weight: "bold", fill: rgb("#2E7D32"))[+ Pros]
+        #text(weight: "bold", fill: rgb("#2E7D32"))[`+` Pros]
         #v(0.4em)
         #list(..pros.map(p => [#p]), marker: text(fill: rgb("#2E7D32"))[•], spacing: 0.5em)
       ],
       [
-        #text(weight: "bold", fill: rgb("#C62828"))[− Cons]
+        #text(weight: "bold", fill: rgb("#C62828"))[`-` Cons]
         #v(0.4em)
         #list(..cons.map(c => [#c]), marker: text(fill: rgb("#C62828"))[•], spacing: 0.5em)
       ],
